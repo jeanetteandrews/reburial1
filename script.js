@@ -222,15 +222,3 @@ clearBtn.addEventListener('click', () => {
     input.value = '';
     clearStage();
 });
-
-// small usability: allow dropping text files onto textarea
-input.addEventListener('dragover', (e) => e.preventDefault());
-input.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f && f.type.startsWith('text')) {
-        const r = new FileReader();
-        r.onload = () => (input.value = r.result);
-        r.readAsText(f);
-    }
-});

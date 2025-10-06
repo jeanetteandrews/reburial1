@@ -52,7 +52,7 @@ function renderHistogram(top) {
   // add axis labels
   const xLabel = document.createElement('div');
   xLabel.className = 'axis-label-x';
-  xLabel.textContent = 'word';
+//   xLabel.textContent = 'word';
   const yLabel = document.createElement('div');
   yLabel.className = 'axis-label-y';
   yLabel.textContent = 'weight';
@@ -214,16 +214,4 @@ analyzeBtn.addEventListener('click', () => {
 clearBtn.addEventListener('click', () => {
   input.value = '';
   stage.innerHTML = '';
-});
-
-// file drop support
-input.addEventListener('dragover', (e) => e.preventDefault());
-input.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const f = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f && f.type.startsWith('text')) {
-    const r = new FileReader();
-    r.onload = () => (input.value = r.result);
-    r.readAsText(f);
-  }
 });

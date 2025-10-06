@@ -70,8 +70,8 @@
     bottom: 8px;
     transform: translateX(-50%);
     font-size: 14px;
-    color: #222;
-    z-index: 2000;
+    color: black;
+    /* z-index: 2000; */
     pointer-events: none;
 }
 
@@ -82,7 +82,7 @@
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: center center;
     font-size: 14px;
-    color: #222;
+    color: black;
     z-index: 2000;
     pointer-events: none;
 }
