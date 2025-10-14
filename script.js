@@ -3,6 +3,9 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const clearBtn = document.getElementById('clearBtn');
 const stage = document.getElementById('stage');
 const excludeStop = document.getElementById('excludeStop');
+const topWordsCount = document.getElementById('topWordsCount');
+const searchWord = document.getElementById('searchWord');
+const searchMessage = document.getElementById('searchMessage');
 
 // small set of English stopwords — tweakable
 const STOPWORDS = new Set(
@@ -12,23 +15,23 @@ const STOPWORDS = new Set(
 );
 
 function normalizeWord(w) {
-  // keep original for contextual checks (we only want the special-case when the
-  // token is exactly the U.S. abbreviation)
-  const orig = String(w || '');
-  let cleaned = orig
+    // keep original for contextual checks (we only want the special-case when the
+    // token is exactly the U.S. abbreviation)
+    const orig = String(w || '');
+    let cleaned = orig
     .replace(/^[^\p{L}']+|[^\p{L}']+$/gu, '')
     .replace(/\d+/g, '')
     .toLowerCase();
 
-  // Special-case: if the token is the U.S. abbreviation (u.s or u.s.),
-  // preserve it as 'u.s.' so the second period is kept.
-  // We only apply this when the cleaned token is exactly 'u.s' or 'u.s.'
-  // to avoid transforming things like 'u.s.-based'.
-  if (cleaned === 'u.s' || cleaned === 'u.s.') {
+    // Special-case: if the token is the U.S. abbreviation (u.s or u.s.),
+    // preserve it as 'u.s.' so the second period is kept.
+    // We only apply this when the cleaned token is exactly 'u.s' or 'u.s.'
+    // to avoid transforming things like 'u.s.-based'.
+    if (cleaned === 'u.s' || cleaned === 'u.s.') {
     cleaned = 'u.s.';
-  }
+    }
 
-  return cleaned;
+    return cleaned;
 }
 
 function getTopWords(text, n = 10, excludeCommon = true) {
@@ -63,9 +66,9 @@ function placeWordEl(word, count, idx, total) {
     const cnt = document.createElement('span');
     cnt.className = 'word-count';
     // show count in parentheses
-    cnt.textContent = `(${String(count)})`;
+    // cnt.textContent = `(${String(count)})`;
     el.appendChild(label);
-    el.appendChild(cnt);
+    // el.appendChild(cnt);
 
     // place at a random-ish position inside the stage (avoid edges)
     // Try to avoid overlapping existing word elements on initial placement.
@@ -90,22 +93,21 @@ function placeWordEl(word, count, idx, total) {
     const elH = el.offsetHeight;
     stage.removeChild(el);
 
-    // gather existing word rectangles relative to stage
+    // Get existing word positions relative to stage content
     const existingRects = Array.from(stage.querySelectorAll('.word')).map((other) => {
-        const r = other.getBoundingClientRect();
         return {
-            left: r.left - stageRect.left,
-            top: r.top - stageRect.top,
+            left: parseFloat(other.style.left) || 0,
+            top: parseFloat(other.style.top) || 0,
             width: other.offsetWidth,
             height: other.offsetHeight,
         };
     });
 
-    // compute bounds we can place inside (respect padding)
+    // Calculate bounds for placement (in stage's local coordinate space)
     const minX = padding;
     const minY = padding;
-    const maxX = Math.max(minX, stageRect.width - elW - padding);
-    const maxY = Math.max(minY, stageRect.height - elH - padding);
+    const maxX = Math.max(minX, stage.offsetWidth - elW - padding);
+    const maxY = Math.max(minY, stage.offsetHeight - elH - padding);
 
     let placed = false;
     let nx = minX;
@@ -181,6 +183,14 @@ function placeWordEl(word, count, idx, total) {
         el.classList.remove('dragging');
     });
 
+    // double-click to delete
+    el.addEventListener('dblclick', () => {
+        el.classList.add('deleting');
+        setTimeout(() => {
+            el.remove();
+        }, 300);
+    });
+
     stage.appendChild(el);
 }
 
@@ -208,7 +218,8 @@ function renderTop(top) {
 
 analyzeBtn.addEventListener('click', () => {
     const text = input.value.trim();
-    const { unique, top } = getTopWords(text, 10, excludeStop.checked);
+    const numTop = parseInt(topWordsCount.value, 10) || 10;
+    const { unique, top } = getTopWords(text, numTop, excludeStop.checked);
 
     // clear stage
     stage.innerHTML = '';
@@ -221,4 +232,58 @@ analyzeBtn.addEventListener('click', () => {
 clearBtn.addEventListener('click', () => {
     input.value = '';
     clearStage();
+});
+
+searchWord.addEventListener('keypress', (ev) => {
+    if (ev.key === 'Enter') {
+        performSearch();
+    }
+});
+
+function performSearch() {
+    const text = input.value.trim();
+    if (!text) {
+        searchMessage.textContent = '';
+        searchMessage.className = 'search-message error';
+        return;
+    }
+
+    const query = searchWord.value.trim().toLowerCase();
+    if (!query) {
+        searchMessage.textContent = '';
+        return;
+    }
+
+    const words = text.split(/\s+/).map(normalizeWord).filter(Boolean);
+    const freq = new Map();
+
+    for (const w of words) {
+        if (w.length === 1) continue;
+        freq.set(w, (freq.get(w) || 0) + 1);
+    }
+
+    if (freq.has(query)) {
+        const count = freq.get(query);
+        searchMessage.textContent = '';
+        searchMessage.className = 'search-message success';
+        
+        // add to stage
+        placeWordEl(query, count, 0, 1);
+        searchWord.value = '';
+    } else {
+        searchMessage.textContent = `"${query}" does not exist in the text`;
+        searchMessage.className = 'search-message error';
+    }
+}
+
+topWordsCount.addEventListener('change', () => {
+    if (parseInt(topWordsCount.value, 10) > 100) {
+        topWordsCount.value = 100;
+    }
+});
+
+topWordsCount.addEventListener('input', () => {
+    if (parseInt(topWordsCount.value, 10) > 100) {
+        topWordsCount.value = 100;
+    }
 });
