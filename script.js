@@ -54,6 +54,30 @@ function clearStage() {
     stage.innerHTML = '';
 }
 
+function visualizeFrequency(word, count) {
+    const overlay = document.createElement('div');
+    overlay.className = 'freq-overlay';
+    document.body.appendChild(overlay);
+
+    for (let i = 0; i < count; i++) {
+        const freqWord = document.createElement('div');
+        freqWord.className = 'freq-word';
+        freqWord.textContent = word;
+        
+        const x = Math.random() * (window.innerWidth - 100);
+        const y = Math.random() * (window.innerHeight - 50);
+        freqWord.style.left = x + 'px';
+        freqWord.style.top = y + 'px';
+        
+        overlay.appendChild(freqWord);
+    }
+
+    // Remove overlay after animation completes
+    setTimeout(() => {
+        overlay.remove();
+    }, 1000);
+}
+
 function placeWordEl(word, count, idx, total) {
     const el = document.createElement('div');
     el.className = 'word';
@@ -143,6 +167,15 @@ function placeWordEl(word, count, idx, total) {
     el.style.top = ny + 'px';
     el.style.visibility = '';
     el.style.position = 'absolute';
+
+    // Single click to visualize frequency (with double-click guard)
+    let clickTimeout;
+    el.addEventListener('click', (ev) => {
+        clearTimeout(clickTimeout);
+        clickTimeout = setTimeout(() => {
+            visualizeFrequency(word, count);
+        }, 300);
+    });
 
     // bind drag handlers (pointer events)
     let offsetX = 0;
