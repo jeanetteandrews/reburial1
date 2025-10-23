@@ -305,3 +305,28 @@ input {
     background-color: rgba(0, 100, 255, 0.3);
     border: 2px solid rgba(0, 100, 255, 0.8);
 }
+
+.rain-drop {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    animation: rainFall 2s ease-in forwards;
+}
+
+.rain-drop::before {
+    content: '★';
+    font-size: 10px;
+    color: black;
+}
+
+@keyframes rainFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(500px) rotate(360deg);
+        opacity: 0;
+    }
+}
