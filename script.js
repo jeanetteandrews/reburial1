@@ -7,20 +7,18 @@ const topWordsCount = document.getElementById('topWordsCount');
 const searchWord = document.getElementById('searchWord');
 const searchMessage = document.getElementById('searchMessage');
 
-// small set of English stopwords — tweakable
 const STOPWORDS = new Set(
     (
-        "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now"
+        "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now"
     ).split(',')
 );
 
 function normalizeWord(w) {
-    // keep original for contextual checks (we only want the special-case when the
-    // token is exactly the U.S. abbreviation)
     const orig = String(w || '');
     let cleaned = orig
     .replace(/^[^\p{L}']+|[^\p{L}']+$/gu, '')
     .replace(/\d+/g, '')
+    .replace(/['']/g, "'") 
     .toLowerCase();
 
     // Special-case: if the token is the U.S. abbreviation (u.s or u.s.),
@@ -40,8 +38,7 @@ function getTopWords(text, n = 10, excludeCommon = true) {
 
     for (const w of words) {
         if (excludeCommon && STOPWORDS.has(w)) continue;
-        // ignore single-letter non-words like 'x' unless they are letters a-z? user choice
-        if (w.length === 1) continue;
+        if (w.length === 1 && excludeCommon) continue;  // Only skip single letters when excluding common words
         freq.set(w, (freq.get(w) || 0) + 1);
     }
 
@@ -59,6 +56,8 @@ function visualizeFrequency(word, count) {
     overlay.className = 'freq-overlay';
     document.body.appendChild(overlay);
 
+    const fragment = document.createDocumentFragment();
+
     for (let i = 0; i < count; i++) {
         const freqWord = document.createElement('div');
         freqWord.className = 'freq-word';
@@ -69,8 +68,10 @@ function visualizeFrequency(word, count) {
         freqWord.style.left = x + 'px';
         freqWord.style.top = y + 'px';
         
-        overlay.appendChild(freqWord);
+        fragment.appendChild(freqWord);
     }
+    
+    overlay.appendChild(fragment);
 
     // Remove overlay after animation completes
     setTimeout(() => {
@@ -90,9 +91,9 @@ function placeWordEl(word, count, idx, total) {
     const cnt = document.createElement('span');
     cnt.className = 'word-count';
     // show count in parentheses
-    // cnt.textContent = `(${String(count)})`;
+    cnt.textContent = `(${String(count)})`;
     el.appendChild(label);
-    // el.appendChild(cnt);
+    el.appendChild(cnt);
 
     // place at a random-ish position inside the stage (avoid edges)
     // Try to avoid overlapping existing word elements on initial placement.
@@ -168,23 +169,23 @@ function placeWordEl(word, count, idx, total) {
     el.style.visibility = '';
     el.style.position = 'absolute';
 
-    // Single click to visualize frequency (with double-click guard)
-    let clickTimeout;
-    el.addEventListener('click', (ev) => {
-        clearTimeout(clickTimeout);
-        clickTimeout = setTimeout(() => {
-            visualizeFrequency(word, count);
-        }, 300);
-    });
-
-    // bind drag handlers (pointer events)
+    // Track interaction state
+    let clickTimer;
+    let preventSingleClick = false;
     let offsetX = 0;
     let offsetY = 0;
     let isDown = false;
+    let startX = 0;
+    let startY = 0;
+    let hasDragged = false;
+    const DBLCLICK_THRESHOLD = 250;
 
     el.addEventListener('pointerdown', (ev) => {
         el.setPointerCapture(ev.pointerId);
         isDown = true;
+        hasDragged = false;
+        startX = ev.clientX;
+        startY = ev.clientY;
         el.style.zIndex = 1000;
         offsetX = ev.clientX - el.getBoundingClientRect().left;
         offsetY = ev.clientY - el.getBoundingClientRect().top;
@@ -193,11 +194,17 @@ function placeWordEl(word, count, idx, total) {
 
     window.addEventListener('pointermove', (ev) => {
         if (!isDown) return;
+        
+        // Check if mouse has moved significantly (more than 5 pixels)
+        const dx = Math.abs(ev.clientX - startX);
+        const dy = Math.abs(ev.clientY - startY);
+        if (dx > 5 || dy > 5) {
+            hasDragged = true;
+        }
+        
         const stageRect = stage.getBoundingClientRect();
-        // compute local coords
         let nx = ev.clientX - stageRect.left - offsetX;
         let ny = ev.clientY - stageRect.top - offsetY;
-        // clamp
         nx = Math.max(0, Math.min(stageRect.width - el.offsetWidth, nx));
         ny = Math.max(0, Math.min(stageRect.height - el.offsetHeight, ny));
         el.style.left = nx + 'px';
@@ -216,8 +223,29 @@ function placeWordEl(word, count, idx, total) {
         el.classList.remove('dragging');
     });
 
-    // double-click to delete
+    // Single click to visualize frequency
+    el.addEventListener('click', () => {
+        if (hasDragged) {
+            hasDragged = false;
+            return;
+        }
+        
+        if (preventSingleClick) {
+            preventSingleClick = false;
+            return;
+        }
+
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => {
+            visualizeFrequency(word, count);
+        }, DBLCLICK_THRESHOLD);
+    });
+
+    // Double-click to delete
     el.addEventListener('dblclick', () => {
+        clearTimeout(clickTimer);
+        preventSingleClick = true;
+        hasDragged = false;
         el.classList.add('deleting');
         setTimeout(() => {
             el.remove();
@@ -225,6 +253,7 @@ function placeWordEl(word, count, idx, total) {
     });
 
     stage.appendChild(el);
+    return el;
 }
 
 function renderTop(top) {
@@ -265,6 +294,8 @@ analyzeBtn.addEventListener('click', () => {
 clearBtn.addEventListener('click', () => {
     input.value = '';
     clearStage();
+    searchWord.value = '';
+    searchMessage.textContent = '';
 });
 
 searchWord.addEventListener('keypress', (ev) => {
@@ -281,7 +312,7 @@ function performSearch() {
         return;
     }
 
-    const query = searchWord.value.trim().toLowerCase();
+    const query = normalizeWord(searchWord.value.trim());
     if (!query) {
         searchMessage.textContent = '';
         return;
@@ -291,21 +322,35 @@ function performSearch() {
     const freq = new Map();
 
     for (const w of words) {
-        if (w.length === 1) continue;
         freq.set(w, (freq.get(w) || 0) + 1);
     }
 
     if (freq.has(query)) {
         const count = freq.get(query);
-        searchMessage.textContent = '';
+        searchMessage.textContent = `"${query}" shows up ${count} ${count === 1 ? 'time' : 'times'} in the text`;
         searchMessage.className = 'search-message success';
         
         // add to stage
-        placeWordEl(query, count, 0, 1);
+        const wordEl = placeWordEl(query, count, 0, 1);
+        if (wordEl) {
+            wordEl.classList.add('new-word');
+        }
         searchWord.value = '';
     } else {
         searchMessage.textContent = `"${query}" does not exist in the text`;
         searchMessage.className = 'search-message error';
+        
+        // add to stage as grey word with count of 0
+        const wordEl = placeWordEl(query, 0, 0, 1);
+        if (wordEl) {
+            wordEl.classList.add('new-word');
+            wordEl.style.color = 'lightgrey';
+            const countEl = wordEl.querySelector('.word-count');
+            if (countEl) {
+                countEl.style.color = 'lightgrey';
+            }
+        }
+        searchWord.value = '';
     }
 }
 

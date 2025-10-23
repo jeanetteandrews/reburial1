@@ -212,10 +212,10 @@ input {
 }
 
 .word {
-	animation: growIn 0.3s ease-out;
+	animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes growIn {
+@keyframes fadeIn {
 	from {
 		transform: scale(0.8);
 		opacity: 0;
@@ -223,6 +223,31 @@ input {
 	to {
 		transform: scale(1);
 		opacity: 1;
+	}
+}
+
+.word.new-word {
+	animation: growIn 0.9s ease-out;
+}
+
+@keyframes growIn {
+	0% {
+		transform: scale(0.8);
+		opacity: 0;
+		background-color: transparent;
+		border-radius: 50%;
+	}
+	30% {
+		transform: scale(1);
+		opacity: 1;
+		background-color: rgba(255, 255, 0, 0.3);
+		border-radius: 50%;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+		background-color: transparent;
+		border-radius: 50%;
 	}
 }
 
