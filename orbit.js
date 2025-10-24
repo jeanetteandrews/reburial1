@@ -14,22 +14,18 @@ const STOPWORDS = new Set(
 );
 
 function normalizeWord(w) {
-    const orig = String(w || '');
-    let cleaned = orig
-    .replace(/^[^\p{L}']+|[^\p{L}']+$/gu, '')
-    .replace(/\d+/g, '')
-    .replace(/['']/g, "'") 
+  const orig = String(w || '');
+  let cleaned = orig
+    .replace(/^[^\p{L}\d']+|[^\p{L}\d']+$/gu, '') // trim non-letters/digits from ends
+    .replace(/['']/g, "'") // normalize apostrophe characters
     .toLowerCase();
 
-    // Special-case: if the token is the U.S. abbreviation (u.s or u.s.),
-    // preserve it as 'u.s.' so the second period is kept.
-    // We only apply this when the cleaned token is exactly 'u.s' or 'u.s.'
-    // to avoid transforming things like 'u.s.-based'.
-    if (cleaned === 'u.s' || cleaned === 'u.s.') {
+  // Preserve common abbreviation U.S. as "u.s." when tokenized
+  if (cleaned === 'u.s' || cleaned === 'u.s.') {
     cleaned = 'u.s.';
-    }
+  }
 
-    return cleaned;
+  return cleaned;
 }
 
 function getTopWords(text, n = 10, excludeCommon = true) {
