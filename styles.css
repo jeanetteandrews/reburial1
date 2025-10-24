@@ -72,7 +72,6 @@ textarea:focus {
 }
 
 button {
-	background: var(--accent);
 	border: 1px solid rgba(0, 0, 0);
 	padding: 8px 12px;
 	cursor: pointer;
@@ -110,12 +109,6 @@ input {
 	gap: 8px;
 	align-items: center;
 	color: var(--muted);
-}
-
-.output {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
 }
 
 .word {
@@ -227,29 +220,49 @@ input {
 }
 
 .word.new-word {
-	animation: growIn 0.9s ease-out;
+	animation: starGrow 1s ease-out;
 }
 
-@keyframes growIn {
+.word.new-word::before {
+	content: '✹';
+	position: absolute;
+	font-size: 60px;
+	color: white;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: -1;
+	animation: starPulse 1.5s ease-out forwards;
+	pointer-events: none;
+	-webkit-text-stroke: 0.8px black;
+}
+
+@keyframes starGrow {
 	0% {
 		transform: scale(0.8);
 		opacity: 0;
-		background-color: transparent;
-		border-radius: 50%;
-	}
-	30% {
-		transform: scale(1);
-		opacity: 1;
-		background-color: rgba(255, 255, 0, 0.3);
-		border-radius: 50%;
 	}
 	100% {
 		transform: scale(1);
 		opacity: 1;
-		background-color: transparent;
-		border-radius: 50%;
 	}
 }
+
+@keyframes starPulse {
+	0% {
+		transform: translate(-50%, -50%) scale(2);
+		opacity: 0;
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(2.5);
+		opacity: 1;
+	}
+	100% {
+		transform: translate(-50%, -50%) scale(0);
+		opacity: 0;
+	}
+}
+
 
 /* Frequency visualization overlay */
 .freq-overlay {
