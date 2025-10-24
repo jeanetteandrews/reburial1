@@ -208,7 +208,6 @@ input {
     height: 100%;
     padding: 12px;
     box-sizing: border-box;
-    /* background-color: pink; */
 }
 
 .bar {
@@ -216,11 +215,11 @@ input {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    width: 8%; /* will be overridden by JS for exact sizing */
-    min-width: 20px;
+    /* width: 8%; */
+	min-width: 20px;
     flex-shrink: 0;
     flex-grow: 0;
-    cursor: grab;
+    cursor: default;
     user-select: none;
     position: relative;
     transition: transform 0.12s ease;
@@ -230,7 +229,6 @@ input {
     cursor: grabbing;
     opacity: 0.90;
     z-index: 1000;
-    /* box-shadow: 0 6px 18px rgba(0,0,0,0.15); */
 }
 
 .bar.deleting {
@@ -241,9 +239,9 @@ input {
 .fill {
     width: 100%;
     background: #434343;
-    /* border-radius: 4px 4px 0 0; */
     box-sizing: border-box;
     display: block;
+    cursor: grab;
 }
 
 .bar-label {
@@ -252,14 +250,13 @@ input {
     font-size: 12px;
     text-align: center;
     width: 100%;
-    /* force single-line, do not wrap and do not use ellipses */
     white-space: nowrap;
     overflow: visible;
     display: inline-block;
     word-break: normal;
-    /* slight rotation for visual style */
     transform: rotate(-28deg);
     transform-origin: center top;
+    cursor: grab;
 }
 
 .stage .hist-wrapper {

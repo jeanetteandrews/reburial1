@@ -11,22 +11,10 @@ const STOPWORDS = new Set((
   "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now"
 ).split(','));
 
-// ----------------------
-// Utility functions
-// ----------------------
-/**
- * Normalize a token: strip punctuation (except inner apostrophes), remove
- * digits, normalize apostrophes, and lowercase. Special-case preserves
- * "u.s." when encountered so periods in the abbreviation are kept.
- *
- * @param {string} w - raw token
- * @returns {string} cleaned token (or empty string)
- */
 function normalizeWord(w) {
   const orig = String(w || '');
   let cleaned = orig
-    .replace(/^[^\p{L}']+|[^\p{L}']+$/gu, '') // trim non-letters from ends
-    .replace(/\d+/g, '') // remove digits
+    .replace(/^[^\p{L}\d']+|[^\p{L}\d']+$/gu, '') // trim non-letters/digits from ends
     .replace(/['']/g, "'") // normalize apostrophe characters
     .toLowerCase();
 
@@ -232,6 +220,18 @@ function attachBarInteractions(bar, wrapper) {
 
   // Begin drag
   bar.addEventListener('pointerdown', (ev) => {
+    // Only allow dragging if clicking on the fill, label, or count, not empty space
+    const fill = bar.querySelector('.fill');
+    const label = bar.querySelector('.bar-label');
+    const countLabel = bar.querySelector('.bar-count');
+    const clickedFill = fill && fill.contains(ev.target);
+    const clickedLabel = label && label.contains(ev.target);
+    const clickedCount = countLabel && countLabel.contains(ev.target);
+    
+    if (!clickedFill && !clickedLabel && !clickedCount) {
+      return; // Don't start drag if clicking empty space
+    }
+
     console.log('bar:pointerdown', { word: bar.dataset.word });
     isDragging = true;
     dragMode = null; // determine mode after movement
@@ -259,8 +259,16 @@ function attachBarInteractions(bar, wrapper) {
     const dy = Math.abs(ev.clientY - startDragY);
 
     // Determine drag mode based on initial movement direction
+    // If bar was previously dragged out, always use free mode
     if (!dragMode && (dx > 5 || dy > 5)) {
-      if (dy > dx * 1.5) {
+      if (bar.dataset.userMoved === '1') {
+        // Bar was already dragged out - always use free drag mode
+        dragMode = 'free';
+        const rect = bar.getBoundingClientRect();
+        bar.classList.add('dragging');
+        bar.style.zIndex = 1000;
+        // Bar is already positioned fixed, just update it
+      } else if (dy > dx * 1.5) {
         // Vertical movement - enter free drag mode
         dragMode = 'free';
         placeholder = createPlaceholder();
@@ -352,7 +360,7 @@ function attachBarInteractions(bar, wrapper) {
       if (placeholder) placeholder.remove();
       placeholder = null;
       console.log('bar:mark-userMoved', { word: bar.dataset.word });
-    } else if (dragMode === 'reorder') {
+    } else if (dragMode === 'reorder' && bar.dataset.userMoved !== '1') {
       // Place bar back in wrapper at placeholder position
       if (placeholder && placeholder.parentNode) {
         wrapper.insertBefore(bar, placeholder);
@@ -374,6 +382,14 @@ function attachBarInteractions(bar, wrapper) {
           const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
           if (ph) ph.remove();
           bar.remove();
+
+          setTimeout(() => {
+            console.log('bar:removed(custom)', { word: bar.dataset.word });
+            const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
+            if (ph) ph.remove();
+            bar.remove();
+            rescaleAllBars(wrapper);
+          }, 200);
         }, 200);
         lastPointerUp = 0;
       } else {
@@ -397,8 +413,47 @@ function attachBarInteractions(bar, wrapper) {
       const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
       if (ph) ph.remove();
       bar.remove();
+
+      setTimeout(() => {
+        console.log('bar:removed', { word: bar.dataset.word });
+        const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
+        if (ph) ph.remove();
+        bar.remove();
+        rescaleAllBars(wrapper);
+      }, 300);
     }, 300);
   });
+}
+
+/**
+ * Recalculate the maximum count from all visible bars and rescale all bars accordingly.
+ * Called after a bar is deleted to ensure remaining bars use the full height.
+ */
+function rescaleAllBars(wrapper) {
+  const barNodes = Array.from(wrapper.querySelectorAll('.bar'));
+  if (barNodes.length === 0) return;
+
+  // Find the new maximum count from all remaining bars
+  const newMax = Math.max(...barNodes.map((b) => parseInt(b.dataset.count, 10) || 0), 1);
+  
+  // Update stored max
+  wrapper.dataset.maxCount = newMax;
+
+  const labelH = 36;
+  const barH = computeBarHeight();
+
+  // Rescale all bars (including dragged ones)
+  barNodes.forEach((bar) => {
+    const fill = bar.querySelector('.fill');
+    const count = parseInt(bar.dataset.count, 10) || 0;
+    const fillRatio = count / newMax;
+    const fillH = Math.round(fillRatio * (barH - labelH));
+    if (fill) {
+      fill.style.height = Math.max(fillH, count > 0 ? 5 : 0) + 'px';
+    }
+  });
+
+  console.log('rescaled all bars, newMax:', newMax);
 }
 
 // ----------------------
@@ -488,9 +543,28 @@ function performSearch() {
 
   const fill = document.createElement('div');
   fill.className = 'fill';
-  // If count > existingMax, cap the visual fill to the full height so
-  // existing bars are not rescaled.
-  const fillRatio = existingMax > 0 ? Math.min(count, existingMax) / existingMax : 1;
+  
+  // If new count exceeds existing max, rescale all existing bars
+  let newMax = existingMax;
+  if (count > existingMax) {
+    newMax = count;
+    wrapper.dataset.maxCount = newMax;
+    
+    // Rescale all existing non-dragged bars
+    barNodes.forEach((existingBar) => {
+      if (existingBar.dataset.userMoved === '1') return; // skip dragged bars
+      
+      const existingFill = existingBar.querySelector('.fill');
+      const existingCount = parseInt(existingBar.dataset.count, 10) || 0;
+      const newFillRatio = existingCount / newMax;
+      const newFillH = Math.round(newFillRatio * (barH - labelH));
+      if (existingFill) {
+        existingFill.style.height = Math.max(newFillH, existingCount > 0 ? 5 : 0) + 'px';
+      }
+    });
+  }
+  
+  const fillRatio = newMax > 0 ? count / newMax : 1;
   const fillH = Math.round(fillRatio * (barH - labelH));
   fill.style.height = Math.max(fillH, count > 0 ? 5 : 0) + 'px';
 
