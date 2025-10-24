@@ -59,6 +59,16 @@ function visualizeFrequency(word, count, wordElement) {
     const startX = wordRect.left - stageRect.left + wordRect.width / 2;
     const startY = wordRect.top - stageRect.top + wordRect.height - 13;
     
+    // Scale delay based on frequency - higher frequency = faster feed
+    let delay;
+    if (count <= 50) {
+        delay = 20; // Normal speed for low counts
+    } else if (count <= 150) {
+        delay = 10; // Faster for medium counts
+    } else {
+        delay = 3; // Very fast for high counts
+    }
+    
     for (let i = 0; i < count; i++) {
         // Stagger the creation of each drop
         setTimeout(() => {
@@ -71,7 +81,7 @@ function visualizeFrequency(word, count, wordElement) {
             drop.style.top = startY + 'px';
             
             // Randomize animation duration for varied fall speeds
-            const duration = 0.6 + Math.random() * 1; // Between 1.5s and 2.5s
+            const duration = 0.6 + Math.random() * 1; // Between 0.6s and 1.6s
             drop.style.animationDuration = duration + 's';
             
             stage.appendChild(drop);
@@ -80,7 +90,7 @@ function visualizeFrequency(word, count, wordElement) {
             setTimeout(() => {
                 drop.remove();
             }, duration * 1000 + 500);
-        }, i * 20); // Each drop starts 30ms after the previous one
+        }, i * delay); // Use scaled delay
     }
 }
 
