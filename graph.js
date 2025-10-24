@@ -245,11 +245,15 @@ function attachBarInteractions(bar, wrapper) {
     offsetY = ev.clientY - rect.top;
 
     if (!bar.dataset.uid) bar.dataset.uid = 'b' + Date.now() + Math.random().toString(36).slice(2, 8);
+
+    bar.style.cursor = 'grabbing'; 
   });
 
   // Track pointer while dragging
   window.addEventListener('pointermove', (ev) => {
     if (!isDragging) return;
+
+    bar.style.cursor = 'grabbing';
 
     const dx = Math.abs(ev.clientX - startDragX);
     const dy = Math.abs(ev.clientY - startDragY);
@@ -334,6 +338,8 @@ function attachBarInteractions(bar, wrapper) {
   // End drag
   window.addEventListener('pointerup', (ev) => {
     if (!isDragging) return;
+
+    bar.style.cursor = 'grab';
 
     isDragging = false;
     bar.classList.remove('dragging');
