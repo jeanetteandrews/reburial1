@@ -4,9 +4,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="container">
+  <div id="intro-wrapper">
+    <div id="intro-screen">
+      <div class="text-block">
+        <p>
+          I first dreamed of a type of poetic engagement with text that referenced & reflected the frequency– or weight– of language when I encountered the Department of the Army Inspector General No Gun Ri Review, a report of over 300 pages that the U.S. issued to cover up the massacre of over 200 civilians it had committed during the Korean War. 
+          <br/><br/>
+          Extending upon the critical work that incredible poets and scholars have done with violent institutional documents, like 
+          <a href="https://www.theatlantic.com/culture/archive/2017/04/the-language-of-apology-in-layli-long-soldiers-whereas/622448/" target="_blank">Layli Long Soldier</a>, 
+          <a href="https://www.nourbese.com/poetry/zong-3/" target="_blank">M NourbeSe Philip</a>, 
+          <a href="https://www.newyorker.com/magazine/2023/07/31/the-ferguson-report-an-erasure-nicole-sealey-poem" target="_blank">Nicole Sealey</a>, and 
+          <a href="https://drive.google.com/file/d/1PMQ-aCFj1edkkJwaKChZJx79sWvn9YLA/view" target="_blank">Solmaz Sharif</a>, I wanted to create a form that would illuminate the ways that the industries of modern empire use excess to exhaust those trying to fight– or at the very least, understand– mechanisms of colonial violence, burying our dead under a barrage of language and image served to distance us from truth and connection. Simultaneously, I was curious about how we could hone in on, interfere with and re-surface the language that was there– and that wasn’t.
+          <br/><br/>
+          I began this by crafting poetic graphs from the language that appeared in the report. But, I wanted to expand this kind of engagement for anyone grappling with language made excessive, bureaucratic, or institutional to obscure the violence underneath.  This is a tool for you: to engage with, break up, and re-cover meaning drained by these sources we rely on to survive, these sources which are killing us. Alternatively, it can be a tool to create new insight and connections from our own language banks and sources. Either way, find connections, have fun!
+          <br/><br/>
+          Love,
+          Chae
+        </p>
+      </div>
+    
+      <button onclick ="hideIntroScreen()">Begin</button>
+    </div>
+  </div>
+
+  <div class="container" id="main" style="display: none;">
     <div class="card">
       <textarea id="inputText" placeholder="Paste text here..."></textarea>
 
@@ -28,11 +52,21 @@
         <input type="text" id="searchWord" placeholder="Add a word..." autocomplete="off"/>
         <div class="search-message" id="searchMessage"></div>
       </div>
+
+      <label><input type="checkbox" id="showFrequency" checked /> show frequency</label>
     </div>
 
     <div class="stage" id="stage"> <!-- words will be injected here --></div>
+    <div class="info-button" id="infoButton">i</div>
+    <div class="info-box" id="infoBox" style="display: none;">
+      <div class="info-content">
+        <p>Click to visualize frequency.
+        <p>Double click to delete.</p>
+        <p>Drag and drop to rearrange.</p>
+      </div>
+    </div>
+    <button id="saveBtn" class="save-btn">Save</button>
   </div>
-
 <script src="script.js"></script>
 </body>
 </html>

@@ -7,6 +7,11 @@ const topWordsCount = document.getElementById('topWordsCount');
 const searchWord = document.getElementById('searchWord');
 const searchMessage = document.getElementById('searchMessage');
 
+function hideIntroScreen() {
+    document.getElementById('main').style.display = 'flex';
+    document.getElementById('intro-wrapper').style.display = 'none';
+}
+
 const STOPWORDS = new Set(
     (
         "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now"
@@ -330,6 +335,11 @@ function performSearch() {
         const wordEl = placeWordEl(query, count, 0, 1);
         if (wordEl) {
             wordEl.classList.add('new-word');
+            // Hide frequency if checkbox is unchecked
+            if (!showFrequency.checked) {
+                const countEl = wordEl.querySelector('.word-count');
+                if (countEl) countEl.style.display = 'none';
+            }
         }
         searchWord.value = '';
     } else {
@@ -340,10 +350,11 @@ function performSearch() {
         const wordEl = placeWordEl(query, 0, 0, 1);
         if (wordEl) {
             wordEl.classList.add('new-word');
-            wordEl.style.color = 'lightgrey';
-            const countEl = wordEl.querySelector('.word-count');
-            if (countEl) {
-                countEl.style.color = 'lightgrey';
+            wordEl.classList.add('zero-frequency');
+            // Hide frequency if checkbox is unchecked
+            if (!showFrequency.checked) {
+                const countEl = wordEl.querySelector('.word-count');
+                if (countEl) countEl.style.display = 'none';
             }
         }
         searchWord.value = '';
@@ -360,4 +371,63 @@ topWordsCount.addEventListener('input', () => {
     if (parseInt(topWordsCount.value, 10) > 100) {
         topWordsCount.value = 100;
     }
+});
+
+const showFrequency = document.getElementById('showFrequency');
+
+showFrequency.addEventListener('change', () => {
+    const wordCounts = document.querySelectorAll('.word-count');
+    wordCounts.forEach(count => {
+        count.style.display = showFrequency.checked ? 'block' : 'none';
+    });
+});
+
+const infoButton = document.getElementById('infoButton');
+const infoBox = document.getElementById('infoBox');
+
+infoButton.addEventListener('click', () => {
+  infoBox.style.display = infoBox.style.display === 'none' ? 'block' : 'none';
+});
+
+// Close info box when clicking outside
+document.addEventListener('click', (e) => {
+  const saveBtn = document.getElementById('saveBtn');
+  if (!infoButton.contains(e.target) && !infoBox.contains(e.target) && !saveBtn.contains(e.target)) {
+    infoBox.style.display = 'none';
+  }
+});
+
+// Refine the document click listener to avoid interference with saveBtn
+const saveBtn = document.getElementById('saveBtn');
+
+saveBtn.addEventListener('click', async (e) => {
+  e.stopPropagation(); // Prevent the document click listener from firing
+
+  const stage = document.getElementById('stage');
+  // Temporarily hide the info button and info box while capturing
+  const infoButton = document.getElementById('infoButton');
+  const infoBox = document.getElementById('infoBox');
+
+  infoButton.style.display = 'none';
+  infoBox.style.display = 'none';
+
+  // Capture the stage as a PNG
+  html2canvas(stage).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'reburial.png';
+    link.href = canvas.toDataURL();
+    link.click();
+
+    // Restore the info button and info box visibility
+    infoButton.style.display = '';
+    infoBox.style.display = '';
+  });
+});
+
+document.addEventListener('click', (e) => {
+  const infoButton = document.getElementById('infoButton');
+  const infoBox = document.getElementById('infoBox');
+  if (!infoButton.contains(e.target) && !infoBox.contains(e.target) && e.target !== saveBtn) {
+    infoBox.style.display = 'none';
+  }
 });
