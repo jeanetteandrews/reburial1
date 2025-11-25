@@ -17,7 +17,7 @@
           <a href="https://www.theatlantic.com/culture/archive/2017/04/the-language-of-apology-in-layli-long-soldiers-whereas/622448/" target="_blank">Layli Long Soldier</a>, 
           <a href="https://www.nourbese.com/poetry/zong-3/" target="_blank">M NourbeSe Philip</a>, 
           <a href="https://www.newyorker.com/magazine/2023/07/31/the-ferguson-report-an-erasure-nicole-sealey-poem" target="_blank">Nicole Sealey</a>, and 
-          <a href="https://drive.google.com/file/d/1PMQ-aCFj1edkkJwaKChZJx79sWvn9YLA/view" target="_blank">Solmaz Sharif</a>, I wanted to create a form that would illuminate the ways that the industries of modern empire use excess to exhaust those trying to fight– or at the very least, understand– mechanisms of colonial violence, burying our dead under a barrage of language and image served to distance us from truth and connection. Simultaneously, I was curious about how we could hone in on, interfere with and re-surface the language that was there– and that wasn’t.
+          <a href="https://drive.google.com/file/d/1PMQ-aCFj1edkkJwaKChZJx79sWvn9YLA/view" target="_blank">Solmaz Sharif</a>, I wanted to create a form that would illuminate the ways that the industries of modern empire use excess to exhaust those trying to fight– or at the very least, understand– mechanisms of colonial violence, burying our dead under a barrage of language and image served to distance us from truth and connection. Simultaneously, I was curious about how we could hone in on, interfere with and re-surface the language that was there– and that wasn't.
           <br/><br/>
           I began this by crafting poetic graphs from the language that appeared in the report. But, I wanted to expand this kind of engagement for anyone grappling with language made excessive, bureaucratic, or institutional to obscure the violence underneath.  This is a tool for you: to engage with, break up, and re-cover meaning drained by these sources we rely on to survive, these sources which are killing us. Alternatively, it can be a tool to create new insight and connections from our own language banks and sources. Either way, find connections, have fun!
           <br/><br/>
@@ -26,7 +26,7 @@
         </p>
       </div>
     
-      <button onclick ="hideIntroScreen()">Begin</button>
+      <button onclick="hideIntroScreen()">Begin</button>
     </div>
   </div>
 
@@ -34,37 +34,69 @@
     <div class="card">
       <textarea id="inputText" placeholder="Paste text here..."></textarea>
 
-      <div class="controls">
-        <div class="top-words-input">
-          <label for="topWordsCount">Top words:</label>
-          <input type="number" id="topWordsCount" min="1" max="100" value="10" />
+      <!-- Settings Accordion -->
+      <div class="settings-accordion">
+        <button class="settings-toggle" id="settingsToggle">
+          <span class="settings-chevron">›</span>
+          <span>Settings</span>
+        </button>
+        <div class="settings-content" id="settingsContent">
+          <div class="setting-item">
+            <label for="topWordsCount">Top # of words:</label>
+            <input type="number" id="topWordsCount" min="1" max="100" value="10" />
+          </div>
+          <label class="setting-item checkbox-item">
+            <input type="checkbox" id="excludeStop" checked />
+            <span>Exclude stop words</span>
+          </label>
+          <label class="setting-item checkbox-item">
+            <input type="checkbox" id="showFrequency" checked />
+            <span>Display frequency</span>
+          </label>
+          <div class="setting-item view-toggle-item">
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" data-view="text">Text</button>
+              <button class="view-toggle-btn" data-view="graph">Graph</button>
+            </div>
+          </div>
         </div>
-        <div class="options ml-auto">
-          <label><input type="checkbox" id="excludeStop" checked /> exclude stop words</label>
-        </div>
-        <div class="buttons">
-          <button id="analyzeBtn">Analyze</button>
-          <button id="clearBtn" class="clear-btn">Clear</button>
-        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="analyzeBtn">Analyze</button>
+        <button id="clearBtn" class="clear-btn">Clear</button>
       </div>
 
       <div class="search-section">
-        <input type="text" id="searchWord" placeholder="Add a word..." autocomplete="off"/>
+        <input type="text" id="searchWord" placeholder="Add another word..." autocomplete="off"/>
         <div class="search-message" id="searchMessage"></div>
       </div>
-
-      <label><input type="checkbox" id="showFrequency" checked /> show frequency</label>
     </div>
 
-    <div class="stage" id="stage"> <!-- words will be injected here --></div>
-    <div class="info-button" id="infoButton">i</div>
+    <div class="stage" id="stage"></div>
+    <div class="top-buttons">
+      <div class="info-button" id="infoButton">Instructions</div>
+      <div class="info-button" id="aboutButton">About</div>
+    </div>
     <div class="info-box" id="infoBox" style="display: none;">
-      <div class="info-content">
-        <p>Click to visualize frequency.
-        <p>Double click to delete.</p>
-        <p>Drag and drop to rearrange.</p>
-      </div>
+    <div class="info-content">
+      <p>Paste text in textbox to visualize the most frequently occurring words. Add any additional word to view its frequency within the text.</p>
+      
+      <p><em>Text mode</em></p>
+      <ol>
+        <li>Drag and drop words to rearrange on screen.</li>
+        <li>Click a word once to visualize its frequency.</li>
+        <li>Double click a word to delete it.</li>
+      </ol>
+      
+      <p><em>Graph mode</em></p>
+      <ol>
+        <li>Drag a bar left and right to rearrange histogram order.</li> 
+        <li>Drag a bar down to place it anywhere on screen.</li>
+        <li>Double click a bar to delete it.</li>
+      </ol>
     </div>
+  </div>
     <button id="saveBtn" class="save-btn">Save</button>
   </div>
 <script src="script.js"></script>

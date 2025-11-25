@@ -24,7 +24,10 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background-color: white;
+	z-index: 10000;
 }
+
 #intro-screen{
 	align-items:center;
     justify-content:center;
@@ -60,17 +63,18 @@ input {
 }
 
 .card {
-	width: 30%;
+	width: 25%;
 	height: 100%;
-	padding: 2rem;
+	padding: 1.5rem;
+	padding-bottom: 1rem;
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
+	overflow-y: auto;
 }
 
 /* stage where words are draggable */
 .stage {
-	width: 70%;
+	width: 75%;
 	height: 100%;
 	display: flex;
 	align-items: center;
@@ -82,7 +86,9 @@ input {
 textarea {
 	box-sizing: border-box;
 	width: 100%;
-	height: 100%;
+	height: 430px;
+	min-height: 300px;
+	flex-shrink: 0;
 	padding: 10px;
 	border-radius: 0px;
 	border: 1px solid rgba(0, 0, 0);
@@ -115,9 +121,10 @@ button:hover {
 }
 
 .buttons {
-	flex-basis: 100%;
+	flex-shrink: 0;
 	display: flex;
 	gap: 11px;
+	margin-bottom: 10px;
 }
 
 #excludeStop {
@@ -220,10 +227,11 @@ input {
 }
 
 .search-section {
+	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	margin-top: 2rem;
+	margin-top: 1.2rem;
 }
 
 .search-input-group {
@@ -247,10 +255,6 @@ input {
 	font-size: 14px;
 	min-height: 20px;
 }
-
-/* .word {
-	animation: fadeIn 0.3s ease-out;
-} */
 
 @keyframes fadeIn {
 	from {
@@ -312,8 +316,6 @@ input {
 
 .freq-word {
   position: absolute;
-  /* font-size: 24px; */
-  /* font-weight: bold; */
   opacity: 0.8;
   user-select: none;
   animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), fadeOut 0.4s ease-in 0.6s forwards;
@@ -354,23 +356,25 @@ input {
     border: 2px solid rgba(0, 100, 255, 0.8);
 }
 
-.info-button {
+.top-buttons {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 30px;
-  height: 30px;
+  margin: 1.5rem;
+  right: 0;
+  display: flex;
+  gap: 0.8rem;
+  z-index: 100;
+}
+
+.info-button {
+  padding: 8px 16px;
   border: 1px solid black;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   background-color: white;
-  font-style: italic;
-  /* font-weight: bold; */
-  z-index: 100;
   user-select: none;
+  transition: background-color 0.2s ease;
 }
 
 .info-button:hover {
@@ -379,24 +383,38 @@ input {
 
 .info-box {
   position: absolute;
-  top: 60px;
-  right: 20px;
+  top: 4.5rem;
+  right: 1.5rem;
   background-color: white;
   border: 1px solid black;
   padding: 16px;
-  max-width: 260px;
+  max-width: 25.5rem;
   z-index: 100;
 }
 
 .info-content p {
-  margin: 0;
-  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.info-content ol {
+  margin: 8px 0 16px 0;
+  padding-left: 24px;
+}
+
+.info-content ol li {
+  margin-bottom: 4px;
+}
+
+.info-content p:last-child,
+.info-content ol:last-child {
+  margin-bottom: 0;
 }
 
 .save-btn {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  margin: 1.5rem;
+  bottom: 0;
+  right: 0;
   background-color: white;
   border: 1px solid black;
   padding: 10px 16px;
@@ -408,4 +426,214 @@ input {
 
 .save-btn:hover {
   background-color: #f0f0f0;
+}
+
+/* Settings Accordion */
+.settings-accordion {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  /* font-size: 16px; */
+  width: auto;
+  min-width: 0;
+}
+
+.settings-toggle:hover {
+  background: none;
+}
+
+.settings-chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 14px;
+}
+
+.settings-chevron.open {
+  transform: rotate(90deg);
+}
+
+.settings-content {
+  display: none;
+  margin-left: 20px;
+  margin-top: .5rem;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+.settings-content.open {
+  display: flex;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* font-size: 14px; */
+}
+
+.setting-item input[type="number"] {
+  width: 50px;
+  padding: 4px 6px;
+  border: 1px solid black;
+  text-align: center;
+}
+
+.setting-item input[type="number"]:focus {
+  outline: none;
+  border: 1px solid black;
+}
+
+.checkbox-item {
+  cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: black;
+}
+
+/* View Toggle */
+.view-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid black;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  background-color: white;
+  border: none;
+  padding: 3px 12px;
+  cursor: pointer;
+  /* font-size: 12px; */
+  transition: background-color 0.2s ease;
+  min-width: 0;
+  max-height: none;
+}
+
+.view-toggle-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.view-toggle-btn.active {
+  background-color: black;
+  color: white;
+}
+
+.view-toggle-btn + .view-toggle-btn {
+  border-left: 1px solid black;
+}
+
+/* Histogram styles */
+
+.hist {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    /* width: 8%; */
+	min-width: 20px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    cursor: default;
+    user-select: none;
+    position: relative;
+    transition: transform 0.12s ease;
+}
+
+.bar.dragging {
+    cursor: grabbing;
+    opacity: 0.90;
+    z-index: 1000;
+}
+
+.bar.deleting {
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fill {
+    width: 100%;
+    background: #434343;
+    box-sizing: border-box;
+    display: block;
+    cursor: grab;
+}
+
+.bar-label {
+    margin-top: 11px;
+    margin-left: -20px;
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
+    word-break: normal;
+    transform: rotate(-28deg);
+    transform-origin: center top;
+    cursor: grab;
+}
+
+.stage .hist-wrapper {
+    height: 100%;
+    /* leave extra bottom padding so x-axis label can sit below bars */
+    padding-bottom: 44px;
+    flex-shrink: 0;
+}
+
+.hist-wrapper {
+	margin-left: .6rem;
+}
+
+/* Axis labels */
+.axis-label-x {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: black;
+    /* z-index: 2000; */
+    pointer-events: none;
+}
+
+.axis-label-y {
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center center;
+    font-size: 14px;
+    color: black;
+    z-index: 2000;
+    pointer-events: none;
 }

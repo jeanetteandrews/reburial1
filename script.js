@@ -1,3 +1,4 @@
+// Variable Definitions
 const input = document.getElementById('inputText');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const clearBtn = document.getElementById('clearBtn');
@@ -6,26 +7,28 @@ const excludeStop = document.getElementById('excludeStop');
 const topWordsCount = document.getElementById('topWordsCount');
 const searchWord = document.getElementById('searchWord');
 const searchMessage = document.getElementById('searchMessage');
+const showFrequency = document.getElementById('showFrequency');
+const infoButton = document.getElementById('infoButton');
+const aboutButton = document.getElementById('aboutButton');
+const infoBox = document.getElementById('infoBox');
+const saveBtn = document.getElementById('saveBtn');
+const introWrapper = document.getElementById('intro-wrapper');
+const mainContent = document.getElementById('main');
+const settingsChevron = document.querySelector('.settings-chevron');
 
-function hideIntroScreen() {
-    document.getElementById('main').style.display = 'flex';
-    document.getElementById('intro-wrapper').style.display = 'none';
-}
-
+// Constants
 const STOPWORDS = new Set(
-    (
-        "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now"
-    ).split(',')
+    "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now".split(',')
 );
 
+// Utility Functions
 function normalizeWord(w) {
   const orig = String(w || '');
   let cleaned = orig
-    .replace(/^[^\p{L}\d']+|[^\p{L}\d']+$/gu, '') // trim non-letters/digits from ends
-    .replace(/['']/g, "'") // normalize apostrophe characters
+    .replace(/^[^\p{L}\d']+|[^\p{L}\d']+$/gu, '')
+    .replace(/['']/g, "'")
     .toLowerCase();
 
-  // Preserve common abbreviation U.S. as "u.s." when tokenized
   if (cleaned === 'u.s' || cleaned === 'u.s.') {
     cleaned = 'u.s.';
   }
@@ -39,7 +42,7 @@ function getTopWords(text, n = 10, excludeCommon = true) {
 
     for (const w of words) {
         if (excludeCommon && STOPWORDS.has(w)) continue;
-        if (w.length === 1 && excludeCommon) continue;  // Only skip single letters when excluding common words
+        if (w.length === 1 && excludeCommon) continue;
         freq.set(w, (freq.get(w) || 0) + 1);
     }
 
@@ -74,7 +77,6 @@ function visualizeFrequency(word, count) {
     
     overlay.appendChild(fragment);
 
-    // Remove overlay after animation completes
     setTimeout(() => {
         overlay.remove();
     }, 1000);
@@ -85,23 +87,19 @@ function placeWordEl(word, count, idx, total) {
     el.className = 'word';
     el.setAttribute('data-word', word);
     el.setAttribute('data-count', count);
-    // separate label and count so the count can appear below the word in smaller font
     const label = document.createElement('span');
     label.className = 'word-label';
     label.textContent = word;
     const cnt = document.createElement('span');
     cnt.className = 'word-count';
-    // show count in parentheses
     cnt.textContent = `(${String(count)})`;
+    cnt.style.display = showFrequency.checked ? 'block' : 'none';
     el.appendChild(label);
     el.appendChild(cnt);
 
-    // place at a random-ish position inside the stage (avoid edges)
-    // Try to avoid overlapping existing word elements on initial placement.
     const padding = 20;
     const stageRect = stage.getBoundingClientRect();
 
-    // helper to test rect intersection (a and b in {left, top, width, height})
     function rectsOverlap(a, b) {
         return !(
             a.left + a.width <= b.left ||
@@ -111,7 +109,6 @@ function placeWordEl(word, count, idx, total) {
         );
     }
 
-    // Measure element size by temporarily adding it hidden to the stage
     el.style.position = 'absolute';
     el.style.visibility = 'hidden';
     stage.appendChild(el);
@@ -119,7 +116,6 @@ function placeWordEl(word, count, idx, total) {
     const elH = el.offsetHeight;
     stage.removeChild(el);
 
-    // Get existing word positions relative to stage content
     const existingRects = Array.from(stage.querySelectorAll('.word')).map((other) => {
         return {
             left: parseFloat(other.style.left) || 0,
@@ -129,7 +125,6 @@ function placeWordEl(word, count, idx, total) {
         };
     });
 
-    // Calculate bounds for placement (in stage's local coordinate space)
     const minX = padding;
     const minY = padding;
     const maxX = Math.max(minX, stage.offsetWidth - elW - padding);
@@ -139,7 +134,6 @@ function placeWordEl(word, count, idx, total) {
     let nx = minX;
     let ny = minY;
 
-    // try several random positions to find a non-overlapping spot
     const MAX_TRIES = 200;
     for (let t = 0; t < MAX_TRIES; t++) {
         nx = Math.random() * (maxX - minX) + minX;
@@ -159,7 +153,6 @@ function placeWordEl(word, count, idx, total) {
         }
     }
 
-    // fallback: if no non-overlapping spot found, clamp to bounds (may overlap)
     if (!placed) {
         nx = Math.min(Math.max(nx, minX), maxX);
         ny = Math.min(Math.max(ny, minY), maxY);
@@ -170,7 +163,6 @@ function placeWordEl(word, count, idx, total) {
     el.style.visibility = '';
     el.style.position = 'absolute';
 
-    // Track interaction state
     let clickTimer;
     let preventSingleClick = false;
     let offsetX = 0;
@@ -196,7 +188,6 @@ function placeWordEl(word, count, idx, total) {
     window.addEventListener('pointermove', (ev) => {
         if (!isDown) return;
         
-        // Check if mouse has moved significantly (more than 5 pixels)
         const dx = Math.abs(ev.clientX - startX);
         const dy = Math.abs(ev.clientY - startY);
         if (dx > 5 || dy > 5) {
@@ -224,7 +215,6 @@ function placeWordEl(word, count, idx, total) {
         el.classList.remove('dragging');
     });
 
-    // Single click to visualize frequency
     el.addEventListener('click', () => {
         if (hasDragged) {
             hasDragged = false;
@@ -242,7 +232,6 @@ function placeWordEl(word, count, idx, total) {
         }, DBLCLICK_THRESHOLD);
     });
 
-    // Double-click to delete
     el.addEventListener('dblclick', () => {
         clearTimeout(clickTimer);
         preventSingleClick = true;
@@ -264,12 +253,9 @@ function renderTop(top) {
         li.dataset.word = word;
         li.innerHTML = `<span>${i + 1}. ${word}</span><strong>${count}</strong>`;
 
-        // clicking an item highlights the word on stage (if present)
         li.addEventListener('click', () => {
-            // find word element
             const el = stage.querySelector(`[data-word='${CSS.escape(word)}']`);
             if (el) {
-                // flash
                 el.animate(
                     [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }],
                     { duration: 300 }
@@ -279,17 +265,353 @@ function renderTop(top) {
     });
 }
 
+// Histogram-related functions
+function computeBarHeight() {
+  const stageH = Math.max(320, stage.clientHeight || 320);
+  // 45% of the stage height gives a bit of breathing room under half.
+  return Math.max(120, Math.floor(stageH * 0.45));
+}
+
+/**
+ * Render an interactive histogram for the provided `top` array. Each entry
+ * should be an object { word, count }.
+ */
+function renderHistogram(top) {
+  // clear the stage area and create a wrapper for bars
+  stage.innerHTML = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'hist-wrapper';
+  wrapper.style.height = '100%';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'flex-end';
+  wrapper.style.gap = '12px';
+  wrapper.style.padding = '12px';
+  // place histogram in the top-left quadrant of the stage (50% width/height)
+  wrapper.style.position = 'absolute'; // position relative to `stage`
+  wrapper.style.left = '0';
+  wrapper.style.top = '0';
+  wrapper.style.width = '50%';
+  wrapper.style.height = '50%';
+  wrapper.style.boxSizing = 'border-box';
+
+  // insert wrapper now so we can measure its computed width when deciding
+  // on fixed pixel bar widths. Bars will use a constant pixel width so
+  // they don't shrink/expand when the wrapper size changes.
+  stage.appendChild(wrapper);
+
+  // find maximum count for scaling (avoid divide-by-zero)
+  const maxCount = Math.max(...top.map((d) => d.count), 1);
+
+  // comfortable minimum sizes so UI remains readable even in small viewports
+  const labelH = 36; // reserved space for the word label
+  const barH = computeBarHeight();
+
+  // Use a constant bar width regardless of number of bars
+  const fixedBarWidth = 20;
+
+  // Store the max count on the wrapper so performSearch can use it
+  wrapper.dataset.maxCount = maxCount;
+
+  // build bar elements in order (highest -> lowest)
+  const bars = top.map((d, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.dataset.index = i;
+    bar.dataset.word = d.word;
+    bar.dataset.count = d.count;
+    // fixed pixel width so bars remain constant
+    bar.style.width = fixedBarWidth + 'px';
+    bar.style.height = barH + 'px';
+
+    // numeric count above the visual fill
+    const countLabel = document.createElement('div');
+    countLabel.className = 'bar-count';
+    countLabel.textContent = String(d.count);
+    countLabel.style.fontSize = '12px';
+    countLabel.style.lineHeight = '16px';
+    countLabel.style.marginBottom = '6px';
+    countLabel.style.textAlign = 'center';
+    countLabel.style.display = showFrequency.checked ? 'block' : 'none';
+
+    // visual fill scaled by the maxCount
+    const fill = document.createElement('div');
+    fill.className = 'fill';
+    const fillH = Math.round((d.count / maxCount) * (barH - labelH));
+    fill.style.height = Math.max(fillH, d.count > 0 ? 5 : 0) + 'px'; // ensure minimum visible fill
+
+    // label area below the fill
+    const label = document.createElement('div');
+    label.className = 'bar-label';
+    label.textContent = d.word;
+    label.style.height = '36px';
+    label.style.boxSizing = 'border-box';
+    label.style.paddingTop = '6px';
+
+    if (d.count === 0) {
+      bar.style.color = 'lightgrey';
+      fill.style.backgroundColor = 'lightgrey';
+    }
+
+    // assemble the bar
+    bar.appendChild(countLabel);
+    bar.appendChild(fill);
+    bar.appendChild(label);
+
+    wrapper.appendChild(bar);
+    return bar;
+  });
+  // Attach interactions to each bar
+  bars.forEach((bar) => attachBarInteractions(bar, wrapper));
+}
+
+/**
+ * Attach pointer / dblclick handlers to a bar element.
+ */
+function attachBarInteractions(bar, wrapper) {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+  let startDragX = 0;
+  let startDragY = 0;
+  let dragMode = null; // 'reorder' or 'free'
+  let placeholder = null;
+  let lastPointerUp = 0;
+
+  // Create placeholder for reordering
+  function createPlaceholder() {
+    const ph = document.createElement('div');
+    ph.className = 'bar-placeholder';
+    ph.dataset.for = bar.dataset.uid || '';
+    const rect = bar.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
+    ph.style.width = w + 'px';
+    ph.style.minWidth = w + 'px';
+    ph.style.height = h + 'px';
+    ph.style.flex = `0 0 ${w}px`;
+    ph.style.visibility = 'hidden';
+    ph.style.pointerEvents = 'none';
+    return ph;
+  }
+
+  // Begin drag
+  bar.addEventListener('pointerdown', (ev) => {
+    // Only allow dragging if clicking on the fill, label, or count
+    const fill = bar.querySelector('.fill');
+    const label = bar.querySelector('.bar-label');
+    const countLabel = bar.querySelector('.bar-count');
+    const clickedFill = fill && fill.contains(ev.target);
+    const clickedLabel = label && label.contains(ev.target);
+    const clickedCount = countLabel && countLabel.contains(ev.target);
+    
+    if (!clickedFill && !clickedLabel && !clickedCount) {
+      return;
+    }
+
+    isDragging = true;
+    dragMode = null;
+    startDragX = ev.clientX;
+    startDragY = ev.clientY;
+    try { bar.setPointerCapture(ev.pointerId); } catch (e) {}
+
+    const rect = bar.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    offsetX = ev.clientX - rect.left;
+    offsetY = ev.clientY - rect.top;
+
+    if (!bar.dataset.uid) bar.dataset.uid = 'b' + Date.now() + Math.random().toString(36).slice(2, 8);
+
+    bar.style.cursor = 'grabbing'; 
+  });
+
+  // Track pointer while dragging
+  window.addEventListener('pointermove', (ev) => {
+    if (!isDragging) return;
+
+    bar.style.cursor = 'grabbing';
+
+    const dx = Math.abs(ev.clientX - startDragX);
+    const dy = Math.abs(ev.clientY - startDragY);
+
+    // Determine drag mode based on initial movement direction
+    if (!dragMode && (dx > 5 || dy > 5)) {
+      if (bar.dataset.userMoved === '1') {
+        dragMode = 'free';
+        const rect = bar.getBoundingClientRect();
+        bar.classList.add('dragging');
+        bar.style.zIndex = 1000;
+      } else if (dy > dx * 1.5) {
+        // Vertical movement - enter free drag mode
+        dragMode = 'free';
+        placeholder = createPlaceholder();
+        if (bar.parentNode) bar.parentNode.insertBefore(placeholder, bar);
+
+        const rect = bar.getBoundingClientRect();
+        bar.classList.add('dragging');
+        bar.style.width = rect.width + 'px';
+        bar.style.height = rect.height + 'px';
+        bar.style.position = 'fixed';
+        bar.style.left = (ev.clientX - offsetX) + 'px';
+        bar.style.top = (ev.clientY - offsetY) + 'px';
+        bar.style.zIndex = 1000;
+        document.body.appendChild(bar);
+      } else {
+        // Horizontal movement - enter reorder mode
+        dragMode = 'reorder';
+        placeholder = createPlaceholder();
+        if (bar.parentNode) bar.parentNode.insertBefore(placeholder, bar);
+
+        const rect = bar.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        bar.classList.add('dragging');
+        bar.style.position = 'absolute';
+        bar.style.left = (rect.left - wrapperRect.left) + 'px';
+        bar.style.top = (rect.top - wrapperRect.top) + 'px';
+        bar.style.zIndex = 1000;
+      }
+    }
+
+    if (dragMode === 'free') {
+      bar.style.left = (ev.clientX - offsetX) + 'px';
+      bar.style.top = (ev.clientY - offsetY) + 'px';
+    } else if (dragMode === 'reorder') {
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const newLeft = ev.clientX - wrapperRect.left - offsetX;
+      bar.style.left = newLeft + 'px';
+
+      const centerX = ev.clientX;
+      let insertBefore = null;
+      for (const child of Array.from(wrapper.children)) {
+        if (child === bar || child === placeholder) continue;
+        if (child.dataset.userMoved === '1') continue;
+        const cRect = child.getBoundingClientRect();
+        const cMid = cRect.left + cRect.width / 2;
+        if (centerX < cMid) {
+          insertBefore = child;
+          break;
+        }
+      }
+      if (insertBefore) {
+        wrapper.insertBefore(placeholder, insertBefore);
+      } else {
+        const children = Array.from(wrapper.children);
+        let lastNonDragged = null;
+        for (let i = children.length - 1; i >= 0; i--) {
+          if (children[i].dataset.userMoved !== '1' && children[i] !== bar && children[i] !== placeholder) {
+            lastNonDragged = children[i];
+            break;
+          }
+        }
+        if (lastNonDragged) {
+          wrapper.insertBefore(placeholder, lastNonDragged.nextSibling);
+        } else {
+          wrapper.appendChild(placeholder);
+        }
+      }
+    }
+  });
+
+  // End drag
+  window.addEventListener('pointerup', (ev) => {
+    if (!isDragging) return;
+
+    bar.style.cursor = 'grab';
+    isDragging = false;
+    bar.classList.remove('dragging');
+    try { bar.releasePointerCapture(ev.pointerId); } catch (e) {}
+
+    if (dragMode === 'free') {
+      bar.dataset.userMoved = '1';
+      bar.style.zIndex = 1;
+      if (placeholder) placeholder.remove();
+      placeholder = null;
+    } else if (dragMode === 'reorder' && bar.dataset.userMoved !== '1') {
+      if (placeholder && placeholder.parentNode) {
+        wrapper.insertBefore(bar, placeholder);
+      }
+      bar.style.position = '';
+      bar.style.left = '';
+      bar.style.top = '';
+      bar.style.zIndex = '';
+      if (placeholder) placeholder.remove();
+      placeholder = null;
+    } else {
+      const now = Date.now();
+      if (lastPointerUp && (now - lastPointerUp) < 420) {
+        bar.classList.add('deleting');
+        setTimeout(() => {
+          const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
+          if (ph) ph.remove();
+          bar.remove();
+          rescaleAllBars(wrapper);
+        }, 200);
+        lastPointerUp = 0;
+      } else {
+        lastPointerUp = now;
+      }
+    }
+
+    dragMode = null;
+  });
+
+  // Double-click removes the bar
+  bar.addEventListener('dblclick', (ev) => {
+    try { if (ev.pointerId) bar.releasePointerCapture(ev.pointerId); } catch (e) {}
+    isDragging = false;
+    bar.classList.remove('dragging');
+    bar.classList.add('deleting');
+
+    setTimeout(() => {
+      const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
+      if (ph) ph.remove();
+      bar.remove();
+      rescaleAllBars(wrapper);
+    }, 300);
+  });
+}
+
+/**
+ * Recalculate the maximum count from all visible bars and rescale.
+ */
+function rescaleAllBars(wrapper) {
+  const barNodes = Array.from(wrapper.querySelectorAll('.bar'));
+  if (barNodes.length === 0) return;
+
+  const newMax = Math.max(...barNodes.map((b) => parseInt(b.dataset.count, 10) || 0), 1);
+  wrapper.dataset.maxCount = newMax;
+
+  const labelH = 36;
+  const barH = computeBarHeight();
+
+  barNodes.forEach((bar) => {
+    const fill = bar.querySelector('.fill');
+    const count = parseInt(bar.dataset.count, 10) || 0;
+    const fillRatio = count / newMax;
+    const fillH = Math.round(fillRatio * (barH - labelH));
+    if (fill) {
+      fill.style.height = Math.max(fillH, count > 0 ? 5 : 0) + 'px';
+    }
+  });
+}
+
+// Event Listeners
 analyzeBtn.addEventListener('click', () => {
     const text = input.value.trim();
     const numTop = parseInt(topWordsCount.value, 10) || 10;
     const { unique, top } = getTopWords(text, numTop, excludeStop.checked);
 
-    // clear stage
-    stage.innerHTML = '';
-    // render list
-    renderTop(top);
-    // place words on stage
-    top.forEach(([w, c], idx) => placeWordEl(w, c, idx, top.length));
+    clearStage();
+    
+    // Check current view mode and render accordingly
+    if (currentView === 'graph') {
+        // Convert top array format from [word, count] to {word, count}
+        renderHistogram(top.map(([word, count]) => ({ word, count })));
+    } else {
+        // Text view - original behavior
+        renderTop(top);
+        top.forEach(([w, c], idx) => placeWordEl(w, c, idx, top.length));
+    }
 });
 
 clearBtn.addEventListener('click', () => {
@@ -326,35 +648,131 @@ function performSearch() {
         freq.set(w, (freq.get(w) || 0) + 1);
     }
 
-    if (freq.has(query)) {
-        const count = freq.get(query);
+    const count = freq.get(query) || 0;
+    
+    if (count > 0) {
         searchMessage.textContent = `"${query}" shows up ${count} ${count === 1 ? 'time' : 'times'} in the text`;
         searchMessage.className = 'search-message success';
-        
-        // add to stage
-        const wordEl = placeWordEl(query, count, 0, 1);
-        if (wordEl) {
-            wordEl.classList.add('new-word');
-            // Hide frequency if checkbox is unchecked
-            if (!showFrequency.checked) {
-                const countEl = wordEl.querySelector('.word-count');
-                if (countEl) countEl.style.display = 'none';
-            }
-        }
-        searchWord.value = '';
     } else {
         searchMessage.textContent = `"${query}" does not exist in the text`;
         searchMessage.className = 'search-message error';
+    }
+
+    // Check if we're in graph view
+    const wrapper = stage.querySelector('.hist-wrapper');
+    
+    if (currentView === 'graph' && wrapper) {
+        // Graph view - add bar to histogram
+        const placeholders = Array.from(wrapper.querySelectorAll('.bar-placeholder'));
+        placeholders.forEach((ph) => ph.remove());
+
+        const barNodes = Array.from(wrapper.querySelectorAll('.bar'));
+        let labelH = 36;
+        let barH = computeBarHeight();
+        const fixedBarWidth = 20;
         
-        // add to stage as grey word with count of 0
-        const wordEl = placeWordEl(query, 0, 0, 1);
+        if (barNodes.length > 0 && barNodes[0].style.height) {
+            barH = parseInt(barNodes[0].style.height, 10) || barH;
+        }
+
+        const existingMax = parseInt(wrapper.dataset.maxCount, 10) || 1;
+
+        const newBar = document.createElement('div');
+        newBar.className = 'bar';
+        newBar.dataset.word = query;
+        newBar.dataset.count = count;
+        newBar.style.width = fixedBarWidth + 'px';
+        newBar.style.height = barH + 'px';
+
+        const countLabel = document.createElement('div');
+        countLabel.className = 'bar-count';
+        countLabel.textContent = String(count);
+        countLabel.style.fontSize = '12px';
+        countLabel.style.lineHeight = '16px';
+        countLabel.style.marginBottom = '6px';
+        countLabel.style.textAlign = 'center';
+        countLabel.style.display = showFrequency.checked ? 'block' : 'none';
+
+        const fill = document.createElement('div');
+        fill.className = 'fill';
+        
+        let newMax = existingMax;
+        if (count > existingMax) {
+            newMax = count;
+            wrapper.dataset.maxCount = newMax;
+            
+            barNodes.forEach((existingBar) => {
+                if (existingBar.dataset.userMoved === '1') return;
+                
+                const existingFill = existingBar.querySelector('.fill');
+                const existingCount = parseInt(existingBar.dataset.count, 10) || 0;
+                const newFillRatio = existingCount / newMax;
+                const newFillH = Math.round(newFillRatio * (barH - labelH));
+                if (existingFill) {
+                    existingFill.style.height = Math.max(newFillH, existingCount > 0 ? 5 : 0) + 'px';
+                }
+            });
+        }
+        
+        const fillRatio = newMax > 0 ? count / newMax : 1;
+        const fillH = Math.round(fillRatio * (barH - labelH));
+        fill.style.height = Math.max(fillH, count > 0 ? 5 : 0) + 'px';
+
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = query;
+        label.style.height = '36px';
+        label.style.boxSizing = 'border-box';
+        label.style.paddingTop = '6px';
+
+        if (count === 0) {
+            newBar.style.color = 'lightgrey';
+            fill.style.backgroundColor = 'lightgrey';
+        }
+
+        newBar.appendChild(countLabel);
+        newBar.appendChild(fill);
+        newBar.appendChild(label);
+
+        attachBarInteractions(newBar, wrapper);
+
+        const children = Array.from(wrapper.children);
+        let inserted = false;
+        for (const child of children) {
+            const isDragged = child.dataset.userMoved === '1';
+            if (isDragged) continue;
+            const childCount = parseInt(child.dataset.count, 10) || 0;
+            if (childCount < count) {
+                wrapper.insertBefore(newBar, child);
+                inserted = true;
+                break;
+            }
+        }
+
+        if (!inserted) {
+            let lastNonDragged = null;
+            for (let i = children.length - 1; i >= 0; i--) {
+                if (children[i].dataset.userMoved !== '1') {
+                    lastNonDragged = children[i];
+                    break;
+                }
+            }
+            if (lastNonDragged) wrapper.insertBefore(newBar, lastNonDragged.nextSibling);
+            else wrapper.appendChild(newBar);
+        }
+
+        searchWord.value = '';
+    } else if (currentView === 'graph' && !wrapper) {
+        // No histogram yet - create one with this word
+        renderHistogram([{ word: query, count: count }]);
+        searchWord.value = '';
+    } else {
+        // Text view - original behavior
+        const wordEl = placeWordEl(query, count, 0, 1);
         if (wordEl) {
             wordEl.classList.add('new-word');
-            wordEl.classList.add('zero-frequency');
-            // Hide frequency if checkbox is unchecked
-            if (!showFrequency.checked) {
-                const countEl = wordEl.querySelector('.word-count');
-                if (countEl) countEl.style.display = 'none';
+            if (count === 0) {
+                wordEl.classList.add('zero-frequency');
             }
         }
         searchWord.value = '';
@@ -362,72 +780,133 @@ function performSearch() {
 }
 
 topWordsCount.addEventListener('change', () => {
-    if (parseInt(topWordsCount.value, 10) > 100) {
-        topWordsCount.value = 100;
+    const maxAllowed = currentView === 'graph' ? 30 : 100;
+    if (parseInt(topWordsCount.value, 10) > maxAllowed) {
+        topWordsCount.value = maxAllowed;
     }
 });
 
 topWordsCount.addEventListener('input', () => {
-    if (parseInt(topWordsCount.value, 10) > 100) {
-        topWordsCount.value = 100;
+    const maxAllowed = currentView === 'graph' ? 30 : 100;
+    if (parseInt(topWordsCount.value, 10) > maxAllowed) {
+        topWordsCount.value = maxAllowed;
     }
 });
 
-const showFrequency = document.getElementById('showFrequency');
-
 showFrequency.addEventListener('change', () => {
-    const wordCounts = document.querySelectorAll('.word-count');
-    wordCounts.forEach(count => {
-        count.style.display = showFrequency.checked ? 'block' : 'none';
-    });
+    const show = showFrequency.checked;
+    
+    if (currentView === 'text') {
+        // Update text view word counts
+        const wordCounts = document.querySelectorAll('.word-count');
+        wordCounts.forEach(count => {
+            count.style.display = show ? 'block' : 'none';
+        });
+    } else {
+        // Update graph view bar counts
+        const barCounts = document.querySelectorAll('.bar-count');
+        barCounts.forEach(count => {
+            count.style.display = show ? 'block' : 'none';
+        });
+    }
 });
-
-const infoButton = document.getElementById('infoButton');
-const infoBox = document.getElementById('infoBox');
 
 infoButton.addEventListener('click', () => {
   infoBox.style.display = infoBox.style.display === 'none' ? 'block' : 'none';
 });
 
-// Close info box when clicking outside
+aboutButton.addEventListener('click', () => {
+  showIntroScreen();
+});
+
 document.addEventListener('click', (e) => {
-  const saveBtn = document.getElementById('saveBtn');
   if (!infoButton.contains(e.target) && !infoBox.contains(e.target) && !saveBtn.contains(e.target)) {
     infoBox.style.display = 'none';
   }
 });
 
-// Refine the document click listener to avoid interference with saveBtn
-const saveBtn = document.getElementById('saveBtn');
-
 saveBtn.addEventListener('click', async (e) => {
-  e.stopPropagation(); // Prevent the document click listener from firing
+  e.stopPropagation();
 
   const stage = document.getElementById('stage');
-  // Temporarily hide the info button and info box while capturing
   const infoButton = document.getElementById('infoButton');
+  const aboutButton = document.getElementById('aboutButton');
   const infoBox = document.getElementById('infoBox');
 
   infoButton.style.display = 'none';
+  aboutButton.style.display = 'none';
   infoBox.style.display = 'none';
 
-  // Capture the stage as a PNG
   html2canvas(stage).then(canvas => {
     const link = document.createElement('a');
     link.download = 'reburial.png';
     link.href = canvas.toDataURL();
     link.click();
 
-    // Restore the info button and info box visibility
     infoButton.style.display = '';
+    aboutButton.style.display = '';
     infoBox.style.display = '';
   });
 });
 
-document.addEventListener('click', (e) => {
-  const infoButton = document.getElementById('infoButton');
-  const infoBox = document.getElementById('infoBox');
-  if (!infoButton.contains(e.target) && !infoBox.contains(e.target) && e.target !== saveBtn) {
-    infoBox.style.display = 'none';
-  }
+// Settings accordion toggle
+settingsToggle.addEventListener('click', () => {
+  const isOpen = settingsContent.classList.toggle('open');
+  settingsChevron.classList.toggle('open', isOpen);
 });
+
+// View toggle (Text/Graph)
+let currentView = 'text'; // track current view mode
+
+const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+viewToggleBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    viewToggleBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const view = btn.dataset.view;
+    currentView = view;
+    console.log('Switched to:', view);
+    
+    // Enforce max word limit based on view
+    const currentValue = parseInt(topWordsCount.value, 10);
+    if (view === 'graph' && currentValue > 30) {
+        topWordsCount.value = 30;
+    }
+    
+    // Remove any dragged bars that were moved outside the histogram
+    const draggedBars = document.querySelectorAll('.bar[data-user-moved="1"]');
+    draggedBars.forEach(bar => bar.remove());
+    
+    // If there's already analyzed text and user switches views, re-render in new mode
+    const text = input.value.trim();
+    if (text && stage.children.length > 0) {
+      const numTop = parseInt(topWordsCount.value, 10) || 10;
+      if (view === 'graph') {
+        const { top } = getTopWords(text, numTop, excludeStop.checked);
+        renderHistogram(top.map(([word, count]) => ({ word, count })));
+      } else {
+        const { top } = getTopWords(text, numTop, excludeStop.checked);
+        clearStage();
+        renderTop(top);
+        top.forEach(([w, c], idx) => placeWordEl(w, c, idx, top.length));
+      }
+    }
+  });
+});
+
+// Function to hide the intro screen with fade
+function hideIntroScreen() {
+    introWrapper.classList.add('fade-out');
+    setTimeout(() => {
+        introWrapper.style.display = 'none';
+        mainContent.style.display = 'flex';
+    }, 500);
+}
+
+// Function to show the intro screen with fade
+function showIntroScreen() {
+    mainContent.style.display = 'none';
+    introWrapper.style.display = 'flex';
+    introWrapper.classList.remove('fade-out');
+}
