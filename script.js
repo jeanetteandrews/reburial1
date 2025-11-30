@@ -1,4 +1,3 @@
-// Variable Definitions
 const input = document.getElementById('inputText');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const clearBtn = document.getElementById('clearBtn');
@@ -11,17 +10,16 @@ const showFrequency = document.getElementById('showFrequency');
 const infoButton = document.getElementById('infoButton');
 const aboutButton = document.getElementById('aboutButton');
 const infoBox = document.getElementById('infoBox');
+const infoCloseBtn = document.getElementById('infoCloseBtn');
 const saveBtn = document.getElementById('saveBtn');
 const introWrapper = document.getElementById('intro-wrapper');
 const mainContent = document.getElementById('main');
 const settingsChevron = document.querySelector('.settings-chevron');
 
-// Constants
 const STOPWORDS = new Set(
     "a,about,above,after,again,against,all,am,an,and,any,are,aren't,as,at,be,because,been,before,being,below,between,both,but,by,can't,could,couldn't,did,didn't,do,does,doesn't,doing,don't,down,during,each,few,for,from,further,had,hadn't,has,hasn't,have,haven't,having,he,he'd,he'll,he's,her,here,here's,hers,herself,him,himself,his,how,how's,i,i'm,i'd,i'll,i'm,i've,if,in,into,is,isn't,it,it's,its,itself,let's,me,more,most,mustn't,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,shan't,she,she'd,she'll,she's,should,shouldn't,so,some,such,than,that,that's,the,their,theirs,them,themselves,then,there,there's,these,they,they'd,they'll,they're,they've,this,those,through,to,too,under,until,up,very,was,wasn't,we,we'd,we'll,we're,we've,were,weren't,what,what's,when,when's,where,where's,which,while,who,who's,whom,why,why's,with,won't,would,wouldn't,you,you'd,you'll,you're,you've,your,yours,yourself,yourselves,s,t,can,will,just,don,should,now".split(',')
 );
 
-// Utility Functions
 function normalizeWord(w) {
   const orig = String(w || '');
   let cleaned = orig
@@ -97,9 +95,6 @@ function placeWordEl(word, count, idx, total) {
     el.appendChild(label);
     el.appendChild(cnt);
 
-    const padding = 20;
-    const stageRect = stage.getBoundingClientRect();
-
     function rectsOverlap(a, b) {
         return !(
             a.left + a.width <= b.left ||
@@ -125,10 +120,10 @@ function placeWordEl(word, count, idx, total) {
         };
     });
 
-    const minX = padding;
-    const minY = padding;
-    const maxX = Math.max(minX, stage.offsetWidth - elW - padding);
-    const maxY = Math.max(minY, stage.offsetHeight - elH - padding);
+    const minX = 0;
+    const minY = 0;
+    const maxX = Math.max(minX, stage.offsetWidth - elW);
+    const maxY = Math.max(minY, stage.offsetHeight - elH);
 
     let placed = false;
     let nx = minX;
@@ -365,35 +360,11 @@ function renderHistogram(top) {
   bars.forEach((bar) => attachBarInteractions(bar, wrapper));
 }
 
-/**
- * Attach pointer / dblclick handlers to a bar element.
- */
 function attachBarInteractions(bar, wrapper) {
   let isDragging = false;
   let offsetX = 0;
   let offsetY = 0;
-  let startDragX = 0;
-  let startDragY = 0;
-  let dragMode = null; // 'reorder' or 'free'
-  let placeholder = null;
   let lastPointerUp = 0;
-
-  // Create placeholder for reordering
-  function createPlaceholder() {
-    const ph = document.createElement('div');
-    ph.className = 'bar-placeholder';
-    ph.dataset.for = bar.dataset.uid || '';
-    const rect = bar.getBoundingClientRect();
-    const w = Math.round(rect.width);
-    const h = Math.round(rect.height);
-    ph.style.width = w + 'px';
-    ph.style.minWidth = w + 'px';
-    ph.style.height = h + 'px';
-    ph.style.flex = `0 0 ${w}px`;
-    ph.style.visibility = 'hidden';
-    ph.style.pointerEvents = 'none';
-    return ph;
-  }
 
   // Begin drag
   bar.addEventListener('pointerdown', (ev) => {
@@ -410,106 +381,31 @@ function attachBarInteractions(bar, wrapper) {
     }
 
     isDragging = true;
-    dragMode = null;
-    startDragX = ev.clientX;
-    startDragY = ev.clientY;
     try { bar.setPointerCapture(ev.pointerId); } catch (e) {}
 
     const rect = bar.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
     offsetX = ev.clientX - rect.left;
     offsetY = ev.clientY - rect.top;
 
     if (!bar.dataset.uid) bar.dataset.uid = 'b' + Date.now() + Math.random().toString(36).slice(2, 8);
 
-    bar.style.cursor = 'grabbing'; 
+    bar.style.cursor = 'grabbing';
+    bar.classList.add('dragging');
+    bar.style.position = 'fixed';
+    bar.style.width = rect.width + 'px';
+    bar.style.height = rect.height + 'px';
+    bar.style.left = (ev.clientX - offsetX) + 'px';
+    bar.style.top = (ev.clientY - offsetY) + 'px';
+    bar.style.zIndex = 1000;
+    document.body.appendChild(bar);
   });
 
   // Track pointer while dragging
   window.addEventListener('pointermove', (ev) => {
     if (!isDragging) return;
 
-    bar.style.cursor = 'grabbing';
-
-    const dx = Math.abs(ev.clientX - startDragX);
-    const dy = Math.abs(ev.clientY - startDragY);
-
-    // Determine drag mode based on initial movement direction
-    if (!dragMode && (dx > 5 || dy > 5)) {
-      if (bar.dataset.userMoved === '1') {
-        dragMode = 'free';
-        const rect = bar.getBoundingClientRect();
-        bar.classList.add('dragging');
-        bar.style.zIndex = 1000;
-      } else if (dy > dx * 1.5) {
-        // Vertical movement - enter free drag mode
-        dragMode = 'free';
-        placeholder = createPlaceholder();
-        if (bar.parentNode) bar.parentNode.insertBefore(placeholder, bar);
-
-        const rect = bar.getBoundingClientRect();
-        bar.classList.add('dragging');
-        bar.style.width = rect.width + 'px';
-        bar.style.height = rect.height + 'px';
-        bar.style.position = 'fixed';
-        bar.style.left = (ev.clientX - offsetX) + 'px';
-        bar.style.top = (ev.clientY - offsetY) + 'px';
-        bar.style.zIndex = 1000;
-        document.body.appendChild(bar);
-      } else {
-        // Horizontal movement - enter reorder mode
-        dragMode = 'reorder';
-        placeholder = createPlaceholder();
-        if (bar.parentNode) bar.parentNode.insertBefore(placeholder, bar);
-
-        const rect = bar.getBoundingClientRect();
-        const wrapperRect = wrapper.getBoundingClientRect();
-        bar.classList.add('dragging');
-        bar.style.position = 'absolute';
-        bar.style.left = (rect.left - wrapperRect.left) + 'px';
-        bar.style.top = (rect.top - wrapperRect.top) + 'px';
-        bar.style.zIndex = 1000;
-      }
-    }
-
-    if (dragMode === 'free') {
-      bar.style.left = (ev.clientX - offsetX) + 'px';
-      bar.style.top = (ev.clientY - offsetY) + 'px';
-    } else if (dragMode === 'reorder') {
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const newLeft = ev.clientX - wrapperRect.left - offsetX;
-      bar.style.left = newLeft + 'px';
-
-      const centerX = ev.clientX;
-      let insertBefore = null;
-      for (const child of Array.from(wrapper.children)) {
-        if (child === bar || child === placeholder) continue;
-        if (child.dataset.userMoved === '1') continue;
-        const cRect = child.getBoundingClientRect();
-        const cMid = cRect.left + cRect.width / 2;
-        if (centerX < cMid) {
-          insertBefore = child;
-          break;
-        }
-      }
-      if (insertBefore) {
-        wrapper.insertBefore(placeholder, insertBefore);
-      } else {
-        const children = Array.from(wrapper.children);
-        let lastNonDragged = null;
-        for (let i = children.length - 1; i >= 0; i--) {
-          if (children[i].dataset.userMoved !== '1' && children[i] !== bar && children[i] !== placeholder) {
-            lastNonDragged = children[i];
-            break;
-          }
-        }
-        if (lastNonDragged) {
-          wrapper.insertBefore(placeholder, lastNonDragged.nextSibling);
-        } else {
-          wrapper.appendChild(placeholder);
-        }
-      }
-    }
+    bar.style.left = (ev.clientX - offsetX) + 'px';
+    bar.style.top = (ev.clientY - offsetY) + 'px';
   });
 
   // End drag
@@ -520,39 +416,9 @@ function attachBarInteractions(bar, wrapper) {
     isDragging = false;
     bar.classList.remove('dragging');
     try { bar.releasePointerCapture(ev.pointerId); } catch (e) {}
-
-    if (dragMode === 'free') {
-      bar.dataset.userMoved = '1';
-      bar.style.zIndex = 1;
-      if (placeholder) placeholder.remove();
-      placeholder = null;
-    } else if (dragMode === 'reorder' && bar.dataset.userMoved !== '1') {
-      if (placeholder && placeholder.parentNode) {
-        wrapper.insertBefore(bar, placeholder);
-      }
-      bar.style.position = '';
-      bar.style.left = '';
-      bar.style.top = '';
-      bar.style.zIndex = '';
-      if (placeholder) placeholder.remove();
-      placeholder = null;
-    } else {
-      const now = Date.now();
-      if (lastPointerUp && (now - lastPointerUp) < 420) {
-        bar.classList.add('deleting');
-        setTimeout(() => {
-          const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
-          if (ph) ph.remove();
-          bar.remove();
-          rescaleAllBars(wrapper);
-        }, 200);
-        lastPointerUp = 0;
-      } else {
-        lastPointerUp = now;
-      }
-    }
-
-    dragMode = null;
+    
+    bar.dataset.userMoved = '1';
+    bar.style.zIndex = 1;
   });
 
   // Double-click removes the bar
@@ -563,8 +429,6 @@ function attachBarInteractions(bar, wrapper) {
     bar.classList.add('deleting');
 
     setTimeout(() => {
-      const ph = wrapper.querySelector('.bar-placeholder[data-for="' + (bar.dataset.uid || '') + '"]');
-      if (ph) ph.remove();
       bar.remove();
       rescaleAllBars(wrapper);
     }, 300);
@@ -619,6 +483,7 @@ clearBtn.addEventListener('click', () => {
     clearStage();
     searchWord.value = '';
     searchMessage.textContent = '';
+    document.querySelectorAll('.bar[data-user-moved="1"]').forEach(bar => bar.remove());
 });
 
 searchWord.addEventListener('keypress', (ev) => {
@@ -780,14 +645,20 @@ function performSearch() {
 }
 
 topWordsCount.addEventListener('change', () => {
-    const maxAllowed = currentView === 'graph' ? 30 : 100;
+    const isMobile = window.innerWidth <= 768;
+    const maxAllowed = isMobile 
+        ? (currentView === 'graph' ? 16 : 50)
+        : (currentView === 'graph' ? 30 : 100);
     if (parseInt(topWordsCount.value, 10) > maxAllowed) {
         topWordsCount.value = maxAllowed;
     }
 });
 
 topWordsCount.addEventListener('input', () => {
-    const maxAllowed = currentView === 'graph' ? 30 : 100;
+    const isMobile = window.innerWidth <= 768;
+    const maxAllowed = isMobile 
+        ? (currentView === 'graph' ? 16 : 50)
+        : (currentView === 'graph' ? 30 : 100);
     if (parseInt(topWordsCount.value, 10) > maxAllowed) {
         topWordsCount.value = maxAllowed;
     }
@@ -815,37 +686,58 @@ infoButton.addEventListener('click', () => {
   infoBox.style.display = infoBox.style.display === 'none' ? 'block' : 'none';
 });
 
+infoCloseBtn.addEventListener('click', () => {
+  infoBox.style.display = 'none';
+});
+
 aboutButton.addEventListener('click', () => {
   showIntroScreen();
 });
 
-document.addEventListener('click', (e) => {
-  if (!infoButton.contains(e.target) && !infoBox.contains(e.target) && !saveBtn.contains(e.target)) {
-    infoBox.style.display = 'none';
-  }
-});
-
-saveBtn.addEventListener('click', async (e) => {
-  e.stopPropagation();
-
+saveBtn.addEventListener('click', () => {
   const stage = document.getElementById('stage');
-  const infoButton = document.getElementById('infoButton');
-  const aboutButton = document.getElementById('aboutButton');
-  const infoBox = document.getElementById('infoBox');
-
-  infoButton.style.display = 'none';
-  aboutButton.style.display = 'none';
-  infoBox.style.display = 'none';
+  
+  // Temporarily move dragged bars back to stage for screenshot
+  const draggedBars = document.querySelectorAll('.bar[data-user-moved="1"]');
+  const originalParents = [];
+  
+  const stageRect = stage.getBoundingClientRect();
+  
+  draggedBars.forEach(bar => {
+    const barRect = bar.getBoundingClientRect();
+    
+    originalParents.push({
+      bar: bar,
+      parent: bar.parentNode,
+      position: bar.style.position,
+      left: bar.style.left,
+      top: bar.style.top
+    });
+    
+    // Calculate position relative to stage
+    const relativeLeft = barRect.left - stageRect.left;
+    const relativeTop = barRect.top - stageRect.top;
+    
+    // Move to stage with corrected absolute positioning
+    bar.style.position = 'absolute';
+    bar.style.left = relativeLeft + 'px';
+    bar.style.top = relativeTop + 'px';
+    stage.appendChild(bar);
+  });
 
   html2canvas(stage).then(canvas => {
+    // Restore dragged bars to their original state
+    originalParents.forEach(({bar, parent, position, left, top}) => {
+      bar.style.position = position;
+      bar.style.left = left;
+      bar.style.top = top;
+      parent.appendChild(bar);
+    });
+    
     const link = document.createElement('a');
     link.download = 'reburial.png';
     link.href = canvas.toDataURL();
     link.click();
-
-    infoButton.style.display = '';
-    aboutButton.style.display = '';
-    infoBox.style.display = '';
   });
 });
 
@@ -869,9 +761,11 @@ viewToggleBtns.forEach(btn => {
     console.log('Switched to:', view);
     
     // Enforce max word limit based on view
+    const isMobile = window.innerWidth <= 768;
     const currentValue = parseInt(topWordsCount.value, 10);
-    if (view === 'graph' && currentValue > 30) {
-        topWordsCount.value = 30;
+    const graphMax = isMobile ? 16 : 30;
+    if (view === 'graph' && currentValue > graphMax) {
+        topWordsCount.value = graphMax;
     }
     
     // Remove any dragged bars that were moved outside the histogram
@@ -895,18 +789,32 @@ viewToggleBtns.forEach(btn => {
   });
 });
 
-// Function to hide the intro screen with fade
 function hideIntroScreen() {
-    introWrapper.classList.add('fade-out');
-    setTimeout(() => {
-        introWrapper.style.display = 'none';
-        mainContent.style.display = 'flex';
-    }, 500);
+    introWrapper.style.display = 'none';
+    mainContent.style.display = 'flex';
 }
 
-// Function to show the intro screen with fade
 function showIntroScreen() {
     mainContent.style.display = 'none';
     introWrapper.style.display = 'flex';
-    introWrapper.classList.remove('fade-out');
 }
+
+// Update click/tap text based on screen size
+function updateClickTapText() {
+  const isMobile = window.innerWidth <= 768;
+  const clickTapElements = document.querySelectorAll('.click-tap-text');
+  clickTapElements.forEach(el => {
+    const currentText = el.textContent.toLowerCase();
+    const isCapitalized = el.textContent[0] === el.textContent[0].toUpperCase();
+    
+    if (isMobile) {
+      el.textContent = isCapitalized ? 'Tap' : 'tap';
+    } else {
+      el.textContent = isCapitalized ? 'Click' : 'click';
+    }
+  });
+}
+
+// Run on load and resize
+updateClickTapText();
+window.addEventListener('resize', updateClickTapText);

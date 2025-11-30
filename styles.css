@@ -26,11 +26,12 @@ body {
 	justify-content: center;
 	background-color: white;
 	z-index: 10000;
+	overflow-y: auto;
 }
 
 #intro-screen{
 	align-items:center;
-    justify-content:center;
+  	justify-content:center;
 	width:min(900px,90%);
 	max-width:900px;
 	box-sizing:border-box;
@@ -231,7 +232,7 @@ input {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	margin-top: 1.2rem;
+	/* margin-top: 1.2rem; */
 }
 
 .search-input-group {
@@ -244,6 +245,9 @@ input {
 	padding: 6px;
 	border: 1px solid rgba(0, 0, 0);
 	box-sizing: border-box;
+	border-radius: 0;
+	-webkit-border-radius: 0;
+	-webkit-appearance: none;
 }
 
 .search-section input[type="text"]:focus {
@@ -410,6 +414,24 @@ input {
   margin-bottom: 0;
 }
 
+.info-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  width: auto;
+  min-width: auto;
+}
+
+.info-close-btn:hover {
+  background-color: #f0f0f0;
+}
+
 .save-btn {
   position: fixed;
   margin: 1.5rem;
@@ -417,7 +439,7 @@ input {
   right: 0;
   background-color: white;
   border: 1px solid black;
-  padding: 10px 16px;
+  /* padding: 10px 16px; */
   cursor: pointer;
   font-size: 16px;
   z-index: 200;
@@ -478,14 +500,15 @@ input {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* font-size: 14px; */
 }
 
 .setting-item input[type="number"] {
-  width: 50px;
+  width: 53px;
   padding: 4px 6px;
   border: 1px solid black;
   text-align: center;
+  -webkit-border-radius: 0;
+  -webkit-appearance: none;
 }
 
 .setting-item input[type="number"]:focus {
@@ -544,15 +567,6 @@ input {
 }
 
 /* Histogram styles */
-
-.hist {
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    height: 100%;
-    padding: 12px;
-    box-sizing: border-box;
-}
 
 .bar {
     display: flex;
@@ -636,4 +650,180 @@ input {
     color: black;
     z-index: 2000;
     pointer-events: none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+	html, body {
+		/* overflow: hidden; */
+		/* height: 100%; */
+		font-size: 16px;
+	}
+
+	#intro-wrapper {
+		padding-top: 10px;
+		display: flex;
+		align-items: flex-start;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#intro-screen {
+		padding: 0;
+		margin: 0;
+		min-height: 100%;
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	#intro-screen button {
+		flex: 0;
+		margin-bottom: 24px;
+	}
+
+	.text-block {
+		font-size: 1rem;
+		padding: 0;
+		margin-bottom: 0;
+	}
+
+	.container {
+		flex-direction: column;
+		height: 100vh;
+		overflow: hidden;
+		padding-bottom: 0;
+		position: relative;
+	}
+
+	.card {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		width: 100%;
+		height: auto;
+		max-height: calc(100vh - 50px);
+		padding: 1rem;
+		padding-bottom: 0;
+		overflow-y: auto;
+		z-index: 100;
+		background-color: white;
+	}
+
+	.stage {
+		position: fixed;
+		top: 321.5px;
+		left: 0;
+		width: 100%;
+		height: calc(100vh - 450px);
+		z-index: 1;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	textarea {
+		height: 150px;
+		min-height: 150px;
+	}
+
+	.buttons {
+		flex-wrap: wrap;
+	}
+
+	button {
+		flex: 1;
+		min-width: 100px;
+		color: black;
+	}
+
+	/* Move top buttons to bottom on mobile */
+	.top-buttons {
+		position: fixed;
+		bottom: 1rem;
+		left: 1rem;
+		right: 33.33%;
+		gap: 11px;
+		flex-wrap: nowrap;
+		z-index: 1000;
+		background-color: white;
+		margin: 0;
+		margin-right: 11px;
+		box-sizing: border-box;
+	}
+
+	.info-button {
+		flex: 1;
+		border: 1px solid black;
+		border-radius: 0;
+		margin: 0;
+		width: auto;
+	}
+
+	.info-box {
+		right: 1rem;
+		left: 1rem;
+		max-width: none;
+		top: 1rem;
+		overflow-y: auto;
+	}
+
+	.save-btn {
+		position: fixed;
+		bottom: 1rem;
+		right: 1rem;
+		left: 66.66%;
+		margin: 0;
+		z-index: 1000;
+		width: auto;
+		border: 1px solid black;
+		border-radius: 0;
+	}
+
+	.word {
+		font-size: 14px !important;
+		padding: 4px 8px;
+	}
+
+	.word-label {
+		font-size: 14px !important;
+	}
+
+	.word-count {
+		font-size: 10px !important;
+	}
+
+	/* Histogram adjustments for mobile */
+	.hist-wrapper {
+		margin-left: 1rem;
+		padding: 0 !important;
+		width: 100% !important;
+		height: 100% !important;
+		gap: 5px !important;
+		/* display: flex;s */
+		/* align-items: center; */
+	}
+
+	.bar {
+		width: 5px;
+	}
+
+	.bar-label {
+		font-size: 10px;
+		margin-top: 8px;
+	}
+
+	.bar-count {
+		font-size: 10px !important;
+	}
+
+	.settings-content {
+		margin-left: 10px;
+	}
+
+	.setting-item {
+		font-size: 1rem;
+	}
 }

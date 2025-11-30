@@ -79,24 +79,24 @@
       <div class="info-button" id="aboutButton">About</div>
     </div>
     <div class="info-box" id="infoBox" style="display: none;">
-    <div class="info-content">
-      <p>Paste text in textbox to visualize the most frequently occurring words. Add any additional word to view its frequency within the text.</p>
-      
-      <p><em>Text mode</em></p>
-      <ol>
-        <li>Drag and drop words to rearrange on screen.</li>
-        <li>Click a word once to visualize its frequency.</li>
-        <li>Double click a word to delete it.</li>
-      </ol>
-      
-      <p><em>Graph mode</em></p>
-      <ol>
-        <li>Drag a bar left and right to rearrange histogram order.</li> 
-        <li>Drag a bar down to place it anywhere on screen.</li>
-        <li>Double click a bar to delete it.</li>
-      </ol>
+      <button class="info-close-btn" id="infoCloseBtn">×</button>
+      <div class="info-content">
+        <p>Paste text in textbox to analyze the most frequently occurring words. Add any additional word to view its frequency within the text.</p>
+        
+        <p><em>Text mode</em></p>
+        <ol>
+          <li>Drag words to rearrange on screen.</li>
+          <li><span class="click-tap-text">Click</span> a word once to visualize its frequency.</li>
+          <li>Double <span class="click-tap-text">click</span> a word to delete it.</li>
+        </ol>
+        
+        <p><em>Graph mode</em></p>
+        <ol>
+          <li>Drag a bar to place it anywhere on screen.</li>
+          <li>Double <span class="click-tap-text">click</span> a bar to delete it.</li>
+        </ol>
+      </div>
     </div>
-  </div>
     <button id="saveBtn" class="save-btn">Save</button>
   </div>
 <script src="script.js"></script>
