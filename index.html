@@ -1,10 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
   <title>Reburial</title>
+
+  <!-- For debugging on mobile -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script> -->
+
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
 </head>
@@ -13,21 +18,20 @@
     <div id="intro-screen">
       <div class="text-block">
         <p>
-          I first dreamed of a type of poetic engagement with text that referenced & reflected the frequency– or weight– of language when I encountered the Department of the Army Inspector General No Gun Ri Review, a report of over 300 pages that the U.S. issued to cover up the massacre of over 200 civilians it had committed during the Korean War. 
-          <br/><br/>
+          I first dreamed of a type of poetic engagement with text that referenced & reflected the frequency– or weight– of language when I encountered the Department of the Army Inspector General No Gun Ri Review, a report of over 300 pages that the U.S. issued to cover up the massacre of over 200 civilians it had committed during the Korean War.
+          <br><br>
           Extending upon the critical work that incredible poets and scholars have done with violent institutional documents, like 
           <a href="https://www.theatlantic.com/culture/archive/2017/04/the-language-of-apology-in-layli-long-soldiers-whereas/622448/" target="_blank">Layli Long Soldier</a>, 
           <a href="https://www.nourbese.com/poetry/zong-3/" target="_blank">M NourbeSe Philip</a>, 
           <a href="https://www.newyorker.com/magazine/2023/07/31/the-ferguson-report-an-erasure-nicole-sealey-poem" target="_blank">Nicole Sealey</a>, and 
           <a href="https://drive.google.com/file/d/1PMQ-aCFj1edkkJwaKChZJx79sWvn9YLA/view" target="_blank">Solmaz Sharif</a>, I wanted to create a form that would illuminate the ways that the industries of modern empire use excess to exhaust those trying to fight– or at the very least, understand– mechanisms of colonial violence, burying our dead under a barrage of language and image served to distance us from truth and connection. Simultaneously, I was curious about how we could hone in on, interfere with and re-surface the language that was there– and that wasn't.
-          <br/><br/>
-          I began this by <a href="https://drive.google.com/file/d/1iKzVzY8-dMCkpZd2a5xqvEkauuiMF9Wi/view?usp=sharing" target="_blank">crafting poetic graphs</a> from the language that appeared in the report. But, I wanted to expand this kind of engagement for anyone grappling with language made excessive, bureaucratic, or institutional to obscure the violence underneath.  This is a tool for you: to engage with, break up, and re-cover meaning drained by these sources we rely on to survive, these sources which are killing us. Alternatively, it can be a tool to create new insight and connections from our own language banks and sources. Either way, find connections, have fun!
-          <br/><br/>
+          <br><br>
+          I began this by <a href="https://drive.google.com/file/d/1iKzVzY8-dMCkpZd2a5xqvEkauuiMF9Wi/view?usp=sharing" target="_blank">crafting poetic graphs</a> from the language that appeared in the report. But, I wanted to expand this kind of engagement for anyone grappling with language made excessive, bureaucratic, or institutional to obscure the violence underneath. This is a tool for you: to engage with, break up, and re-cover meaning drained by these sources we rely on to survive, these sources which are killing us. Alternatively, it can be a tool to create new insight and connections from our own language banks and sources. Either way, find connections, have fun!
+          <br><br>
           Love,
           Chae
         </p>
       </div>
-    
       <button onclick="hideIntroScreen()">Begin</button>
     </div>
   </div>
@@ -36,7 +40,6 @@
     <div class="card">
       <textarea id="inputText" placeholder="Paste text here..."></textarea>
 
-      <!-- Settings Accordion -->
       <div class="settings-accordion">
         <button class="settings-toggle" id="settingsToggle">
           <span class="settings-chevron">›</span>
@@ -45,20 +48,20 @@
         <div class="settings-content" id="settingsContent">
           <div class="setting-item">
             <label for="topWordsCount">Top # of words:</label>
-            <input type="number" id="topWordsCount" min="1" max="100" value="10" />
+            <input type="number" id="topWordsCount" min="1" max="100" value="10">
           </div>
           <label class="setting-item checkbox-item">
-            <input type="checkbox" id="excludeStop" checked />
+            <input type="checkbox" id="excludeStop" checked>
             <span>Exclude stop words</span>
           </label>
           <label class="setting-item checkbox-item">
-            <input type="checkbox" id="showFrequency" checked />
+            <input type="checkbox" id="showFrequency" checked>
             <span>Display frequency</span>
           </label>
           <div class="setting-item view-toggle-item">
             <div class="view-toggle">
-              <button class="view-toggle-btn active" data-view="text">Text</button>
-              <button class="view-toggle-btn" data-view="graph">Graph</button>
+              <button class="view-toggle-btn active" data-view="graph">Graph</button>
+              <button class="view-toggle-btn" data-view="text">Text</button>
             </div>
           </div>
         </div>
@@ -70,7 +73,7 @@
       </div>
 
       <div class="search-section">
-        <input type="text" id="searchWord" placeholder="Add another word..." autocomplete="off"/>
+        <input type="text" id="searchWord" placeholder="Search for a word..." autocomplete="off">
         <div class="search-message" id="searchMessage"></div>
       </div>
     </div>
@@ -82,25 +85,13 @@
     </div>
     <div class="info-box" id="infoBox" style="display: none;">
       <button class="info-close-btn" id="infoCloseBtn">×</button>
-      <div class="info-content">
-        <p>Paste text in textbox to analyze the most frequently occurring words. Add any additional word to view its frequency within the text. Rearrange words to craft poetry.</p>
-        
-        <p><em>Text mode</em></p>
-        <ol>
-          <li>Drag words to rearrange on screen.</li>
-          <li><span class="click-tap-text">Click</span> a word once to visualize its frequency.</li>
-          <li>Double <span class="click-tap-text">click</span> a word to delete it.</li>
-        </ol>
-        
-        <p><em>Graph mode</em></p>
-        <ol>
-          <li>Drag a bar to place it anywhere on screen.</li>
-          <li>Double <span class="click-tap-text">click</span> a bar to delete it.</li>
-        </ol>
+      <div class="info-content" id="dynamic-instructions">
+        <!-- Content will be sinserted here -->
       </div>
     </div>
     <button id="saveBtn" class="save-btn">Save</button>
   </div>
-<script src="script.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>
