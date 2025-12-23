@@ -480,7 +480,7 @@ function placeWordEl(word, count, idx, total, showAnimation = true) {
     const wordHeight = showFrequency.checked ? 40 : 30;
 
     const minX = 0;
-    const minY = 50;
+    const minY = 0;
     const maxX = Math.max(minX, displayWidth - labelWidth);
     const maxY = Math.max(minY, displayHeight - wordHeight);
 
@@ -912,6 +912,8 @@ analyzeBtn.addEventListener('click', () => {
 
 clearBtn.addEventListener('click', () => {
     input.value = '';
+    input.classList.remove('has-content');  
+    customPlaceholder.style.display = 'block'; 
     clearStage();
     searchWord.value = '';
     searchMessage.textContent = '';
@@ -926,7 +928,7 @@ searchWord.addEventListener('keypress', (ev) => {
 topWordsCount.addEventListener('change', () => {
     const isMobile = window.innerWidth <= 768;
     const maxAllowed = isMobile 
-        ? (currentView === 'graph' ? 13 : 30)
+        ? (currentView === 'graph' ? 13 : 25)
         : (currentView === 'graph' ? 35 : 100); 
     if (parseInt(topWordsCount.value, 10) > maxAllowed) {
         topWordsCount.value = maxAllowed;
@@ -936,7 +938,7 @@ topWordsCount.addEventListener('change', () => {
 topWordsCount.addEventListener('input', () => {
     const isMobile = window.innerWidth <= 768;
     const maxAllowed = isMobile 
-        ? (currentView === 'graph' ? 13 : 30)
+        ? (currentView === 'graph' ? 13 : 25)
         : (currentView === 'graph' ? 35 : 100);  
     if (parseInt(topWordsCount.value, 10) > maxAllowed) {
         topWordsCount.value = maxAllowed;
@@ -1096,6 +1098,66 @@ viewToggleBtns.forEach(btn => {
         }
     });
 });
+
+// Custom placeholder functionality
+const customPlaceholder = document.querySelector('.custom-placeholder');
+const exampleLink = document.querySelector('.example-link');
+
+// Handle input focus/blur to show/hide placeholder
+input.addEventListener('focus', () => {
+    customPlaceholder.style.display = 'none';
+});
+
+input.addEventListener('blur', () => {
+    if (input.value.trim() === '') {
+        customPlaceholder.style.display = 'block';
+    }
+});
+
+input.addEventListener('input', () => {
+    if (input.value.trim() !== '') {
+        input.classList.add('has-content');
+        customPlaceholder.style.display = 'none';
+    } else {
+        input.classList.remove('has-content');
+        if (document.activeElement !== input) {
+            customPlaceholder.style.display = 'block';
+        }
+    }
+});
+
+exampleLink.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+        const textFiles = [
+            'No_Gun_Ri_Review_Report.txt',
+            'NYT_reporting_on_palestine.txt',
+            'NYT_reporting_on_trans_kids.txt'
+        ];
+        
+        const randomFile = textFiles[Math.floor(Math.random() * textFiles.length)];
+        
+        const response = await fetch(`sample_text/${randomFile}`);
+        const text = await response.text();
+        input.value = text;
+        input.classList.add('has-content');
+        customPlaceholder.style.display = 'none';
+        input.focus();
+        setTimeout(() => {
+            input.scrollTop = 0;
+        }, 0);
+    } catch (error) {
+        console.error('Error loading example text:', error);
+        alert('Could not load example text. Please check that the file exists in the sample_text folder.');
+    }
+});
+
+if (input.value.trim() === '') {
+    customPlaceholder.style.display = 'block';
+} else {
+    customPlaceholder.style.display = 'none';
+    input.classList.add('has-content');
+}
 
 updateClickTapText();
 updateInstructions();

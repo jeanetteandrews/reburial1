@@ -102,6 +102,38 @@ textarea:focus {
 	outline: none;
 }
 
+.textarea-wrapper {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.custom-placeholder {
+    position: absolute;
+    top: 11px;
+    left: 11px;
+    pointer-events: none;
+    color: #757575;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.custom-placeholder .example-link {
+    text-decoration: underline;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.custom-placeholder .example-link:hover {
+    color: #757575;
+}
+
+#inputText:focus + .custom-placeholder,
+#inputText.has-content + .custom-placeholder {
+    display: none;
+}
+
 button {
 	background-color: #ffffff;
 	border: 1px solid rgba(0, 0, 0);
@@ -376,6 +408,10 @@ input {
 @media (max-width: 768px) {
 	html, body {
 		font-size: 16px;
+	}
+
+	.search-section input[type="text"]::placeholder {
+		color: #757575;
 	}
 
 	#intro-wrapper {
