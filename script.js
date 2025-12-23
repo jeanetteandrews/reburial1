@@ -869,7 +869,7 @@ function updateInstructions() {
             <ol>
                 <li>Paste text to see ${currentView === 'graph' ? 'a histogram of ' : ''}the most frequently occurring words.</li>
                 <li>Drag words${currentView === 'graph' ? '/bars' : ''} anywhere on screen to craft ${currentView === 'graph' ? 'poetic graphs' : 'poetry'}.</li>
-                <li>Search for any word to view its frequency.</li>
+                <li>Search for a word to view its frequency within the text.</li>
                 <li>Tap a word${currentView === 'graph' ? '/bar' : ''} to delete it.</li>
             </ol>
         `;
@@ -878,7 +878,7 @@ function updateInstructions() {
             <ol>
                 <li>Paste text to see the most frequently occurring words.</li>
                 <li>Drag words to rearrange into poetry.</li>
-                <li>Search for any word to view its frequency.</li>
+                <li>Search for a word to view its frequency within the text.</li>
                 <li>Click a word once to visualize its frequency.</li>
                 <li>Double-click a word to delete it.</li>
             </ol>
@@ -888,7 +888,7 @@ function updateInstructions() {
             <ol>
                 <li>Paste text to see a histogram of the most frequently occurring words.</li>
                 <li>Drag bars anywhere on screen to craft poetic graphs.</li>
-                <li>Search for any word to view its frequency.</li>
+                <li>Search for a word to view its frequency within the text.</li>
                 <li>Double-click a bar to delete it.</li>
             </ol>
         `;
